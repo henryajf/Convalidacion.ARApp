@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Convalidación Argentina</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0a0f;--surface:#111118;--card-front:#13131e;--card-back:#0d1a2a;
+  --border:rgba(255,255,255,0.07);--text:#f0f0f8;--muted:rgba(240,240,248,0.45);
+  --accent:#4f9eff;--green:#30d980;--red:#ff5c5c;--gold:#f0b429;--purple:#a78bfa;
+  --glow-a:rgba(79,158,255,0.15);--glow-b:rgba(167,139,250,0.10);
+}
+html,body{height:100%;width:100%;font-family:'Syne',sans-serif;background:var(--bg);color:var(--text);overflow:hidden;touch-action:pan-y}
+body::before{content:'';position:fixed;inset:0;z-index:0;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events:none}
+.aurora{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(ellipse 60% 40% at 20% 20%,var(--glow-a),transparent),
+             radial-gradient(ellipse 50% 50% at 80% 80%,var(--glow-b),transparent),
+             radial-gradient(ellipse 40% 30% at 50% 100%,rgba(48,217,128,0.06),transparent);
+  animation:aurora-shift 12s ease-in-out infinite alternate}
+@keyframes aurora-shift{0%{transform:scale(1) rotate(0deg);opacity:1}100%{transform:scale(1.08) rotate(2deg);opacity:0.8}}
+
+/* ── START ── */
+#ss{position:fixed;inset:0;z-index:10;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem;animation:fadeIn .6s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.badge{font-size:.65rem;font-weight:700;letter-spacing:.25em;text-transform:uppercase;color:var(--accent);background:rgba(79,158,255,.1);border:1px solid rgba(79,158,255,.25);padding:.35rem 1rem;border-radius:100px;margin-bottom:2rem}
+.title{font-family:'DM Serif Display',serif;font-size:clamp(2rem,6vw,4.5rem);line-height:1.05;text-align:center;margin-bottom:.6rem;background:linear-gradient(135deg,#f0f0f8 30%,rgba(240,240,248,0.5));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.title em{font-style:italic;background:linear-gradient(135deg,var(--accent),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{color:var(--muted);font-size:.88rem;text-align:center;margin-bottom:2.5rem;font-weight:400}
+.counts{display:flex;gap:2rem;flex-wrap:wrap;justify-content:center;margin-bottom:2.5rem}
+.cnt{display:flex;flex-direction:column;align-items:center;gap:.2rem}
+.cnt-n{font-size:1.5rem;font-weight:800;color:var(--text)}
+.cnt-l{font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.modes{display:flex;gap:1rem;margin-bottom:2.5rem;flex-wrap:wrap;justify-content:center}
+.mcard{width:175px;padding:1.3rem 1.1rem;border-radius:16px;border:2px solid var(--border);background:var(--surface);cursor:pointer;transition:all .25s;text-align:center;position:relative;overflow:hidden}
+.mcard::before{content:'';position:absolute;inset:0;opacity:0;transition:opacity .25s;background:radial-gradient(ellipse at center,var(--glow-a),transparent 70%)}
+.mcard:hover::before,.mcard.sel::before{opacity:1}
+.mcard:hover,.mcard.sel{border-color:rgba(79,158,255,.4);transform:translateY(-2px)}
+.mcard.sel{background:rgba(79,158,255,.08)}
+.micon{font-size:1.8rem;margin-bottom:.5rem;display:block}
+.mname{font-weight:700;font-size:.9rem;margin-bottom:.25rem}
+.mdesc{font-size:.7rem;color:var(--muted);line-height:1.4}
+.go{padding:1rem 3rem;border-radius:100px;border:none;background:linear-gradient(135deg,var(--accent),var(--purple));color:#fff;font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;cursor:pointer;box-shadow:0 0 40px rgba(79,158,255,.3);transition:all .25s}
+.go:hover{transform:translateY(-2px) scale(1.03);box-shadow:0 0 60px rgba(79,158,255,.5)}
+.go:disabled{opacity:.4;cursor:not-allowed;transform:none}
+
+/* ── GAME ── */
+#sg{position:fixed;inset:0;z-index:10;display:none;flex-direction:column}
+.topbar{flex-shrink:0;padding:.7rem 1.2rem;display:flex;align-items:center;gap:.8rem;border-bottom:1px solid var(--border);background:rgba(10,10,15,.85);backdrop-filter:blur(12px);z-index:2}
+.backbtn{background:none;border:1.5px solid var(--border);border-radius:8px;color:var(--muted);font-family:'Syne',sans-serif;font-size:.72rem;padding:.32rem .75rem;cursor:pointer;transition:all .2s;flex-shrink:0}
+.backbtn:hover{border-color:var(--accent);color:var(--accent)}
+.progwrap{flex:1;display:flex;flex-direction:column;gap:.28rem}
+.progtxt{display:flex;justify-content:space-between;font-size:.65rem;color:var(--muted);font-weight:600;letter-spacing:.03em}
+.progtrack{height:4px;background:rgba(255,255,255,.07);border-radius:100px;overflow:hidden}
+.progfill{height:100%;border-radius:100px;transition:width .5s cubic-bezier(.4,0,.2,1);background:linear-gradient(90deg,var(--green),var(--accent));width:0%}
+.chips{display:flex;gap:.4rem;flex-shrink:0}
+.chip{font-size:.7rem;font-weight:700;padding:.25rem .65rem;border-radius:100px}
+.chip-ok{background:rgba(48,217,128,.12);color:var(--green);border:1px solid rgba(48,217,128,.25)}
+.chip-bad{background:rgba(255,92,92,.12);color:var(--red);border:1px solid rgba(255,92,92,.25)}
+.stage{flex:1;display:flex;align-items:center;justify-content:center;perspective:1400px;padding:1.2rem;position:relative;overflow:hidden}
+.systag{position:absolute;top:1rem;left:50%;transform:translateX(-50%);font-size:.6rem;font-weight:700;letter-spacing:.15em;text-transform:uppercase;padding:.28rem .85rem;border-radius:100px;border:1px solid;z-index:3;white-space:nowrap;transition:all .4s}
+.cardwrap{width:100%;max-width:780px;height:min(510px,80vh);position:relative;transform-style:preserve-3d;user-select:none}
+.flipper{width:100%;height:100%;position:relative;transform-style:preserve-3d;transition:transform .65s cubic-bezier(.4,0,.2,1)}
+.face{position:absolute;inset:0;backface-visibility:hidden;border-radius:22px;display:flex;flex-direction:column;overflow:hidden}
+.face-f{background:var(--card-front);border:1.5px solid var(--border);box-shadow:0 24px 80px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.04)}
+.face-b{background:var(--card-back);border:1.5px solid rgba(79,158,255,.2);box-shadow:0 24px 80px rgba(0,0,0,.6),0 0 40px rgba(79,158,255,.08);transform:rotateY(180deg)}
+/* FRONT */
+.fi{flex:1;display:flex;flex-direction:column;padding:2rem 2.4rem;gap:1.4rem;overflow:hidden}
+.qnum{font-size:.62rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
+.qtxt{font-family:'DM Serif Display',serif;font-size:clamp(1rem,2.3vw,1.38rem);line-height:1.45;color:var(--text);flex-shrink:0}
+.optgrid{display:grid;grid-template-columns:1fr 1fr;gap:.55rem;flex:1;align-content:start}
+.opt{display:flex;align-items:flex-start;gap:.6rem;padding:.65rem .85rem;border-radius:11px;border:1.5px solid rgba(255,255,255,.07);background:rgba(255,255,255,.02);cursor:pointer;transition:all .18s;font-family:'Syne',sans-serif;font-size:.78rem;color:var(--muted);line-height:1.4;text-align:left}
+.opt:hover:not(:disabled){border-color:rgba(79,158,255,.45);background:rgba(79,158,255,.06);color:var(--text);transform:translateY(-1px)}
+.optl{flex-shrink:0;width:22px;height:22px;border-radius:6px;background:rgba(255,255,255,.06);color:var(--muted);font-size:.7rem;font-weight:800;display:flex;align-items:center;justify-content:center;transition:all .18s}
+.opt.correct{border-color:var(--green);background:rgba(48,217,128,.08);color:var(--text)}
+.opt.correct .optl{background:var(--green);color:#0a0a0f}
+.opt.wrong{border-color:var(--red);background:rgba(255,92,92,.08);color:var(--text)}
+.opt.wrong .optl{background:var(--red);color:#fff}
+.opt:disabled{cursor:default}
+.fliph{font-size:.66rem;color:var(--muted);text-align:center;padding:.5rem 0 .6rem;letter-spacing:.04em;flex-shrink:0;opacity:0;transition:opacity .4s}
+.fliph.vis{opacity:1}
+.fliph span{border:1px solid rgba(255,255,255,.1);border-radius:100px;padding:.18rem .75rem}
+/* BACK */
+.bi{flex:1;display:flex;flex-direction:column;padding:2rem 2.4rem;gap:1rem;overflow:hidden}
+.blbl{font-size:.58rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--accent)}
+.bans{font-family:'DM Serif Display',serif;font-size:clamp(1rem,2vw,1.3rem);line-height:1.4;color:var(--green);padding:.9rem 1.2rem;border-radius:11px;background:rgba(48,217,128,.06);border:1px solid rgba(48,217,128,.15);flex-shrink:0}
+.explbl{font-size:.58rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
+.exptxt{font-size:.84rem;line-height:1.68;color:rgba(240,240,248,.75);overflow-y:auto;flex:1}
+.exptxt::-webkit-scrollbar{width:3px}
+.exptxt::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:100px}
+.rob{display:flex;align-items:center;gap:.5rem;font-size:.73rem;font-weight:700;flex-shrink:0}
+.robd{width:8px;height:8px;border-radius:50%}
+/* BOTTOM */
+.botbar{flex-shrink:0;padding:.85rem 1.2rem;display:flex;align-items:center;justify-content:space-between;gap:.8rem;border-top:1px solid var(--border);background:rgba(10,10,15,.85);backdrop-filter:blur(12px)}
+.nbtn{display:flex;align-items:center;gap:.45rem;padding:.7rem 1.5rem;border-radius:100px;border:none;font-family:'Syne',sans-serif;font-size:.85rem;font-weight:700;cursor:pointer;transition:all .22s;letter-spacing:.02em}
+.nprev{background:rgba(255,255,255,.06);color:var(--muted);border:1.5px solid var(--border)}
+.nprev:hover{color:var(--text);border-color:rgba(255,255,255,.2)}
+.nflip{background:rgba(79,158,255,.1);color:var(--accent);border:1.5px solid rgba(79,158,255,.25)}
+.nflip:hover{background:rgba(79,158,255,.18)}
+.nnext{background:linear-gradient(135deg,var(--accent),var(--purple));color:#fff;box-shadow:0 0 28px rgba(79,158,255,.22)}
+.nnext:hover{box-shadow:0 0 42px rgba(79,158,255,.42);transform:translateY(-1px)}
+.nnext.pulse{animation:pulseglow 1.6s ease-in-out infinite;box-shadow:0 0 28px rgba(79,158,255,.3)}
+@keyframes pulseglow{0%,100%{box-shadow:0 0 20px rgba(79,158,255,.25);transform:scale(1)}50%{box-shadow:0 0 50px rgba(79,158,255,.65);transform:scale(1.04)}}
+/* EDGE indicators */
+.edge{position:absolute;top:0;bottom:0;width:80px;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .15s;pointer-events:none;z-index:5;font-size:1.3rem}
+.edgel{left:0;background:linear-gradient(90deg,rgba(255,255,255,.06),transparent);border-radius:22px 0 0 22px}
+.edger{right:0;background:linear-gradient(-90deg,rgba(79,158,255,.1),transparent);border-radius:0 22px 22px 0;color:var(--accent)}
+/* DONE */
+#sd{position:fixed;inset:0;z-index:10;display:none;flex-direction:column;align-items:center;justify-content:center;padding:2rem;text-align:center}
+.demoji{font-size:3.5rem;margin-bottom:.8rem}
+.dtitle{font-family:'DM Serif Display',serif;font-size:clamp(1.7rem,5vw,2.8rem);margin-bottom:.4rem}
+.dscore{font-size:3.2rem;font-weight:800;margin:.8rem 0;background:linear-gradient(135deg,var(--green),var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.dstats{display:flex;gap:1.8rem;flex-wrap:wrap;justify-content:center;margin-bottom:1.8rem}
+.ds{display:flex;flex-direction:column;align-items:center;gap:.18rem}
+.ds .n{font-size:1.7rem;font-weight:800}
+.ds .l{font-size:.62rem;text-transform:uppercase;letter-spacing:.12em;color:var(--muted)}
+.dgoback{padding:.8rem 2.2rem;border-radius:100px;border:none;background:linear-gradient(135deg,var(--accent),var(--purple));color:#fff;font-family:'Syne',sans-serif;font-size:.95rem;font-weight:700;cursor:pointer;transition:all .22s;margin-right:.5rem}
+.dgoback:hover{transform:translateY(-2px);box-shadow:0 0 35px rgba(79,158,255,.4)}
+.drestart{padding:.8rem 2.2rem;border-radius:100px;border:1.5px solid var(--border);background:transparent;color:var(--muted);font-family:'Syne',sans-serif;font-size:.95rem;font-weight:700;cursor:pointer;transition:all .22s}
+.drestart:hover{border-color:var(--accent);color:var(--accent)}
+/* System tag colors */
+.tc{color:#f0883e;border-color:rgba(240,136,62,.3);background:rgba(240,136,62,.07)}
+.tc2{color:#ff7b72;border-color:rgba(255,123,114,.3);background:rgba(255,123,114,.07)}
+.tc3{color:#bc8cff;border-color:rgba(188,140,255,.3);background:rgba(188,140,255,.07)}
+.tc4{color:#79c0ff;border-color:rgba(121,192,255,.3);background:rgba(121,192,255,.07)}
+.tc5{color:#f0b429;border-color:rgba(240,180,41,.3);background:rgba(240,180,41,.07)}
+.tc6{color:#56d364;border-color:rgba(86,211,100,.3);background:rgba(86,211,100,.07)}
+.tc7{color:#e09a5a;border-color:rgba(224,154,90,.3);background:rgba(224,154,90,.07)}
+.tc8{color:#39d353;border-color:rgba(57,211,83,.3);background:rgba(57,211,83,.07)}
+.tc9{color:#8b949e;border-color:rgba(139,148,158,.3);background:rgba(139,148,158,.07)}
+@media(max-width:600px){
+  .optgrid{grid-template-columns:1fr}
+  .fi,.bi{padding:1.4rem 1.3rem;gap:.9rem}
+  .nbtn{padding:.6rem 1.1rem;font-size:.78rem}
+}
+
+.copyright{
+  margin-top:1.5rem;
+  font-size:.62rem;
+  color:rgba(240,240,248,0.18);
+  letter-spacing:.06em;
+  text-align:center;
+  font-style:italic;
+  transition:color .3s;
+}
+.copyright:hover{color:rgba(240,240,248,0.42);}
+</style>
+</head>
+<body>
+<div class="aurora"></div>
+
+<!-- START -->
+<div id="ss">
+  <div class="badge">Medicina · Convalidación Argentina</div>
+  <h1 class="title">Tarjetas de<br><em>Repaso Médico</em></h1>
+  <p class="sub">Una pregunta a la vez · Deslizá para navegar · Girá para ver la explicación</p>
+  <div class="counts">
+    <div class="cnt"><span class="cnt-n">116</span><span class="cnt-l">Preguntas</span></div>
+    <div class="cnt"><span class="cnt-n">9</span><span class="cnt-l">Especialidades</span></div>
+    <div class="cnt"><span class="cnt-n">∞</span><span class="cnt-l">Giro infinito</span></div>
+  </div>
+  <div class="modes">
+    <div class="mcard sel" id="mr" onclick="selMode('random')">
+      <span class="micon">🔀</span>
+      <div class="mname">Aleatorio</div>
+      <div class="mdesc">Todas las preguntas mezcladas para un repaso integral</div>
+    </div>
+    <div class="mcard" id="mo" onclick="selMode('order')">
+      <span class="micon">📚</span>
+      <div class="mname">Por Sistemas</div>
+      <div class="mdesc">Organizado por especialidad médica de forma secuencial</div>
+    </div>
+  </div>
+  <button class="go" onclick="startGame()">Comenzar →</button>
+  <p class="copyright">© Henry Jaramillo Forti, MD. Todos los derechos reservados.</p>
+</div>
+
+<!-- GAME -->
+<div id="sg">
+  <div class="topbar">
+    <button class="backbtn" onclick="goHome()">← Salir</button>
+    <div class="progwrap">
+      <div class="progtxt"><span id="plbl">Pregunta 1 de 116</span><span id="ppct">0%</span></div>
+      <div class="progtrack"><div class="progfill" id="pf"></div></div>
+    </div>
+    <div class="chips">
+      <span class="chip chip-ok">✓ <span id="sok">0</span></span>
+      <span class="chip chip-bad">✗ <span id="sbad">0</span></span>
+    </div>
+  </div>
+  <div class="stage">
+    <div class="systag" id="stag"></div>
+    <div class="cardwrap" id="cw">
+      <div class="flipper" id="fl">
+        <div class="face face-f">
+          <div class="fi">
+            <div class="qnum" id="qn"></div>
+            <div class="qtxt" id="qt"></div>
+            <div class="optgrid" id="og"></div>
+            <div class="fliph" id="fh"><span>↻ tocá la tarjeta para ver la explicación</span></div>
+          </div>
+        </div>
+        <div class="face face-b">
+          <div class="bi">
+            <div class="blbl">Respuesta correcta</div>
+            <div class="bans" id="ba"></div>
+            <div class="explbl">Explicación clínica</div>
+            <div class="exptxt" id="et"></div>
+            <div class="rob" id="rob"></div>
+          </div>
+        </div>
+        <div class="edge edgel" id="el"></div>
+        <div class="edge edger" id="er">→</div>
+      </div>
+    </div>
+  </div>
+  <div class="botbar">
+    <button class="nbtn nprev" onclick="nav(-1)">← Anterior</button>
+    <button class="nbtn nflip" onclick="flipCard()">↻ Girar</button>
+    <button class="nbtn nnext" id="bnt" onclick="nav(1)">Siguiente →</button>
+  </div>
+</div>
+
+<!-- DONE -->
+<div id="sd">
+  <div class="demoji">🎯</div>
+  <div class="dtitle">¡Repaso completado!</div>
+  <div class="dscore" id="dsc">—</div>
+  <div class="dstats">
+    <div class="ds"><span class="n" id="dok" style="color:var(--green)">0</span><span class="l">Correctas</span></div>
+    <div class="ds"><span class="n" id="dbd" style="color:var(--red)">0</span><span class="l">Incorrectas</span></div>
+    <div class="ds"><span class="n" id="dtt">0</span><span class="l">Respondidas</span></div>
+  </div>
+  <button class="drestart" onclick="restartGame()">↺ Repetir</button>
+  <button class="dgoback" onclick="goHome()">Inicio</button>
+</div>
+
+<script>
+const Q = [
+  {id:1,sys:"cirugia",q:`¿Cuál de las siguientes opciones corresponde a una hernia por deslizamiento?`,opts:["Aquella que en su interior tiene intestino delgado", "Aquella que en su interior tiene el apéndice cecal o los anexos en la mujer", "Es un fenómeno que se da en las hernias recidivadas", "Aquella en la que la parte del saco herniario está formado por una víscera"],c:3,exp:`Una hernia deslizante es aquella en la que una víscera (como intestino o vejiga) forma parte de la PARED del saco herniario. Las otras opciones describen el contenido o características no específicas de este tipo.`},
+  {id:2,sys:"cirugia",q:`¿Es característica de la patología arterial obstructiva aguda en miembros inferiores?`,opts:["La ausencia de pulso, dolor súbito, frialdad y la impotencia funcional", "La claudicación intermitente", "Índice tobillo-brazo de 1.1", "Los trastornos tróficos en piel y faneras"],c:0,exp:`La oclusión arterial aguda presenta las 6 P: dolor súbito, palidez, ausencia de pulso, parestesias, parálisis y frialdad. La claudicación y los trastornos tróficos son propios de la enfermedad CRÓNICA. El ITB 1.1 es normal.`},
+  {id:3,sys:"cirugia",q:`¿Cuál de los siguientes exámenes complementarios es más adecuado ante un nódulo de 2 cm en la parótida?`,opts:["Tomografía computada y biopsia por punción con aguja gruesa", "Tomografía computada y biopsia quirúrgica", "Ecografía y fibrolaringoscopia", "Ecografía y biopsia por punción aspiración"],c:3,exp:`Ecografía + BAAF (biopsia por punción aspiración) es la primera línea para nódulos parotídeos. La ecografía caracteriza la lesión (sólido/quístico) y la BAAF obtiene citología de forma mínimamente invasiva. La biopsia quirúrgica se reserva si la BAAF no es diagnóstica.`},
+  {id:4,sys:"cirugia",q:`Niño de 8 años con dolor periumbilical de 24 hs que migra al cuadrante inferior derecho, náuseas, anorexia y dolor a la descompresión. ¿Diagnóstico más probable?`,opts:["Apendicitis aguda", "Megacolon", "Divertículo de Meckel", "Invaginación intestinal"],c:0,exp:`Cuadro clásico de apendicitis aguda: dolor periumbilical → FID + náuseas + anorexia + Blumberg positivo. Es la urgencia quirúrgica abdominal más frecuente en pediatría. Megacolon y Meckel no siguen este patrón migratorio.`},
+  {id:5,sys:"cirugia",q:`¿Cuál de los siguientes enunciados permite definir una hernia estrangulada?`,opts:["Existe compromiso de la vascularización de la pared del intestino", "Su contenido no puede ser reintegrado a la cavidad abdominal", "Su contenido, una vez reintegrado, no permanece en la cavidad abdominal", "Provoca una obstrucción intestinal mecánica"],c:0,exp:`La hernia ESTRANGULADA implica compromiso vascular del contenido → isquemia → necrosis. Es emergencia quirúrgica. La hernia INCARCERADA (opción b) no puede reducirse pero sin compromiso vascular. No toda obstrucción significa estrangulación.`},
+  {id:6,sys:"cirugia",q:`Sobre el adenocarcinoma de esófago (pregunta incompleta en el original), ¿cuál afirmación es correcta?`,opts:["Tiene como factores predisponentes el tabaquismo exclusivamente", "Se asocia al esófago de Barrett", "Se trata con quimioterapia y radioterapia exclusivamente", "Las metástasis más frecuentes son óseas"],c:1,exp:`El esófago de BARRETT (metaplasia intestinal por RGE crónico) es el principal precursor del adenocarcinoma esofágico. El tratamiento incluye cirugía + QT/RT según estadio. Las metástasis más frecuentes son ganglionares y hepáticas, no óseas.`},
+  {id:7,sys:"cirugia",q:`El tratamiento inicial de una paciente con cáncer de mama es quirúrgico cuando:`,opts:["No tiene metástasis a distancia", "Tiene compromiso de piel", "Tiene úlcera y eritema", "Posee infiltración cutánea"],c:0,exp:`La cirugía es el tratamiento inicial en enfermedad localizada SIN metástasis a distancia. El compromiso dérmico, eritema e infiltración cutánea sugieren enfermedad avanzada o inflamatoria → se requiere quimioterapia neoadyuvante primero.`},
+  {id:8,sys:"cirugia",q:`¿Cuál de las siguientes afirmaciones define el ganglio centinela?`,opts:["Es el ganglio linfático más cercano al tumor", "Es el ganglio linfático con metástasis más cercano al tumor", "Es el primer ganglio linfático en recibir drenaje linfático del tumor", "Es el ganglio linfático con la metástasis de mayor tamaño"],c:2,exp:`El ganglio centinela es el PRIMER ganglio en recibir drenaje del tumor. Si no tiene metástasis, los restantes probablemente tampoco. Permite evitar linfadenectomía completa. No se define por proximidad ni tamaño de metástasis.`},
+  {id:9,sys:"cirugia",q:`Melanoma extensivo superficial Breslow 3.2 mm en pierna izquierda, sin adenopatías. ¿Conducta adecuada?`,opts:["Vaciamiento ganglionar inguinal derecho electivo", "Biopsia de ganglio centinela y radioterapia en el territorio ganglionar", "Radioterapia en axilar y posterior vaciamiento inguinal", "Biopsia de ganglio centinela y vaciamiento inguinal si fuera positivo"],c:3,exp:`Breslow > 1 mm indica biopsia de GANGLIO CENTINELA. Si es positivo → vaciamiento inguinal IZQUIERDO (lesión en pierna izquierda). El vaciamiento derecho es incorrecto. La radioterapia ganglionar no es estándar post-BGC en melanoma.`},
+  {id:10,sys:"cirugia",q:`¿Cuál es la característica clínica más frecuente en un tumor maligno de la parótida?`,opts:["Síndrome de Claude Bernard-Horner", "Signo de Chvostek positivo", "Parálisis facial", "Parálisis lingual"],c:2,exp:`La PARÁLISIS FACIAL es el signo más característico de malignidad parotídea, ya que el nervio facial atraviesa la glándula y puede ser infiltrado por el tumor. Chvostek → hipocalcemia. Horner → cadena simpática cervical.`},
+  {id:11,sys:"cirugia",q:`Varón 63 años, fumador, nódulo sólido 35 mm en región lateral del cuello, sin enfermedad de cabeza/cuello ni sistémica. ¿Método diagnóstico indicado?`,opts:["Biopsia quirúrgica incisional", "Tomografía con emisión de positrones (PET/TC)", "Biopsia por punción con aguja fina", "Determinación de marcadores tumorales en sangre"],c:2,exp:`La BAAF (biopsia por punción con aguja fina) es mínimamente invasiva y es el primer paso diagnóstico. La biopsia quirúrgica se reserva si la BAAF no es diagnóstica. La PET/TC evalúa extensión, no es diagnóstico inicial. Los marcadores no son específicos.`},
+  {id:12,sys:"cirugia",q:`Varón 17 años, asintomático, con nódulo indoloro de aparición repentina en región suprahioidea. ¿Diagnóstico más probable?`,opts:["Quiste tirogloso", "Adenitis inflamatoria", "Quiste branquial", "Metástasis de cáncer de tiroides"],c:0,exp:`El QUISTE TIROGLOSO es la anomalía congénita cervical más frecuente en jóvenes. Se ubica en línea media o suprahioideo, es indoloro y asciende al deglutir. Los quistes branquiales son LATERALES. La adenitis es dolorosa con signos de infección.`},
+  {id:13,sys:"cirugia",q:`¿Cuál es el primer estudio a realizar ante un traumatismo en cara para diagnosticar fractura maxilofacial?`,opts:["Mentonasoplaca", "Frontonasoplaca", "Tomografía computada de macizo facial", "Resonancia magnética nuclear de cabeza y cuello"],c:1,exp:`La FRONTONASOPLACA (proyección de Waters/occipitomentoniana) es el estudio inicial de elección: rápida, accesible y evalúa senos, maxilares, cigoma y órbitas. La TAC se reserva cuando se necesita más detalle para planificar la cirugía. La RMN evalúa tejidos blandos, no hueso agudo.`},
+  {id:14,sys:"cirugia",q:`Mujer 39 años con nódulo tiroideo de 3.5 cm, sin síntomas de hipo ni hipertiroidismo. ¿Estudios más adecuados para evaluación inicial?`,opts:["Centellograma tiroideo y ecografía de cuello", "Tomografía computada de cuello y determinación de TSH", "Resonancia magnética y determinación de TSH", "Ecografía de cuello y determinación de TSH"],c:3,exp:`ECOGRAFÍA + TSH es el estándar inicial para nódulos tiroideos. La ecografía caracteriza el nódulo (TIRADS) y la TSH evalúa función. Si TSH suprimida → centellograma para detectar nódulo hiperfuncionante. La TAC y RMN no son estudios iniciales de elección.`},
+  {id:15,sys:"cirugia",q:`Hernia inguinal que 4 horas antes se volvió irreductible con dolor intenso irradiado al abdomen. ¿Diagnóstico más probable?`,opts:["Hernia inguinal irreductible", "Hernia inguinal atascada", "Hernia inguinal incoercible", "Hernia inguinal no complicada"],c:1,exp:`HERNIA ATASCADA (incarcerada): no puede reducirse + dolor local con irradiación. Requiere evaluación urgente para descartar estrangulación (compromiso vascular). 'Incoercible' no es terminología estándar. 'Irreductible' es sinónimo de incarcerada pero la opción b es la correcta según el documento.`},
+  {id:16,sys:"cirugia",q:`¿Cuál es la finalidad de las técnicas restrictivas de cirugía bariátrica?`,opts:["Disminuir la absorción de grasas", "Disminuir la capacidad gástrica y producir saciedad precoz", "Crear un intestino corto", "Disminuir la absorción gástrica", "Disminuir la absorción intestinal"],c:1,exp:`Las técnicas RESTRICTIVAS (manga gástrica, banda gástrica) reducen el volumen del estómago → saciedad precoz + menor ingesta. Las técnicas MALABSORTIVAS (bypass Y de Roux) actúan sobre absorción intestinal. Las otras opciones describen técnicas malabsortivas.`},
+  {id:17,sys:"cirugia",q:`Puérpera 18 años, 20 días postparto, con absceso mamario de 5 cm (área fluctuante), fiebre, 72 hs de cefalexina sin mejoría. ¿Conducta más adecuada?`,opts:["Rotar antibiótico y evaluar respuesta en 48 horas", "Drenaje quirúrgico inmediato", "Internación y tratamiento antibiótico endovenoso", "Continuar con igual esquema antibiótico y vaciamiento mamario anual"],c:1,exp:`Área FLUCTUANTE = absceso formado. Los ATB no penetran el absceso. El DRENAJE QUIRÚRGICO INMEDIATO es la conducta correcta. Los antibióticos son complementarios pero no suficientes como tratamiento único cuando hay absceso establecido.`},
+  {id:18,sys:"legal",q:`El abuso sexual según el Art. 119 del Código Penal (Ley 25.087/99) se clasifica en el Título III como delitos contra:`,opts:["La honestidad", "La dignidad sexual", "La libertad sexual y de género", "La integridad sexual"],c:3,exp:`La Ley 25.087/99 reformó el Código Penal argentino denominando el Título III 'DELITOS CONTRA LA INTEGRIDAD SEXUAL', reemplazando el antiguo título 'contra la honestidad'. Refleja un enfoque moderno centrado en la autonomía e integridad de la persona.`},
+  {id:19,sys:"legal",q:`El consentimiento informado en la práctica médica e investigación en humanos se debe realizar porque es:`,opts:["Una dispensa eximente de malpraxis dada por el paciente", "Una obligación legal", "Un hecho consuetudinario de buena práctica", "Un decisorio médico basado en la justa causa moral"],c:1,exp:`El CI es una OBLIGACIÓN LEGAL Y ÉTICA (Ley 26.529 en Argentina). NO exime de responsabilidad por malpraxis. Requiere: información clara, capacidad de decisión del paciente y voluntariedad. Se basa en el derecho a la autonomía del paciente.`},
+  {id:20,sys:"legal",q:`¿Cuándo es obligatorio el test de serología para detectar VIH?`,opts:["Donación de sangre y donación para trasplantes", "Si está inconsciente y sin acompañantes y debe ser intervenido quirúrgicamente en urgencia", "Para evitar un mal mayor por justa causa", "Cuando se somete a un examen de ingreso laboral o a una obra social prepaga"],c:0,exp:`La serología para VIH es OBLIGATORIA en donaciones de sangre y órganos para trasplante, para proteger a los receptores. En los demás casos requiere consentimiento informado. No es obligatoria para exámenes laborales ni ingreso a prepagas (protección contra discriminación).`},
+  {id:21,sys:"legal",q:`Para extender un certificado de cremación, previamente debe existir:`,opts:["La licencia de inhumación", "La declaratoria de herederos", "La manifestación fehaciente del fallecimiento de ser cremado", "El certificado de defunción"],c:3,exp:`El CERTIFICADO DE DEFUNCIÓN es el documento previo obligatorio para cualquier disposición del cuerpo, incluyendo cremación. Acredita el fallecimiento y su causa. La licencia de inhumación es para enterrar, no cremar. La declaratoria de herederos es un proceso legal diferente.`},
+  {id:22,sys:"legal",q:`El marco jurídico vigente sobre trasplantes considera la muerte bajo criterios neurológicos como:`,opts:["Muerte cerebral", "Muerte neuronal", "Muerte encefálica", "Muerte neurosomática definitiva e irreversible"],c:2,exp:`La ley argentina de trasplantes utiliza el término MUERTE ENCEFÁLICA: pérdida irreversible de todas las funciones del encéfalo, incluyendo el tronco cerebral (a diferencia de 'cerebral' que solo implica corteza). Permite donación de órganos con soporte cardiorrespiratorio.`},
+  {id:23,sys:"legal",q:`La Resolución 716/19 exige como requisito de muerte neurológica la:`,opts:["Apnea definitiva", "Ausencia de actividad cardíaca", "Ausencia de respiración espontánea cuando la PaCO₂ ha alcanzado los 55 mmHg", "Ausencia completa de las funciones del sistema nervioso vegetativo"],c:2,exp:`El TEST DE APNEA exige demostrar ausencia de esfuerzo respiratorio con PaCO₂ ≥ 55 mmHg. A ese nivel, el centro respiratorio del tronco cerebral debería estimular la respiración. La ausencia de respuesta confirma disfunción encefálica irreversible. La actividad cardíaca puede mantenerse artificialmente.`},
+  {id:24,sys:"legal",q:`¿Qué se entiende por iatrogenía?`,opts:["Una variante excusable de mala práctica médica", "Un resultado disvalioso de una correcta práctica médica", "Un daño ocasionado al paciente por una falencia aparatológica o instrumental", "Una lesión psicofísica sin intencionalidad por un acto médico erróneo"],c:1,exp:`La IATROGENÍA es el daño producido por el actuar médico CORRECTO: no implica error ni negligencia. Puede ser un efecto adverso esperado o inesperado de una práctica adecuada. Etimológicamente: iatros (médico) + génos (origen).`},
+  {id:25,sys:"legal",q:`Según el Art. 20 de la Ley 26.657 (Salud Mental), una internación involuntaria tendrá lugar ante:`,opts:["Cualquier situación de peligrosidad para sí o para terceros", "Una situación de peligro y riesgo cierto e inminente para sí o para terceros", "Una situación de riesgo cierto e inminente para sí o para terceros", "Cualquier situación de riesgo, ya sea propio o de alteridad"],c:1,exp:`La Ley 26.657 exige PELIGRO Y RIESGO CIERTO E INMINENTE para la internación involuntaria. No basta cualquier riesgo genérico. Es una medida de último recurso con garantías procesales y revisión judicial inmediata para proteger los derechos de las personas con problemas de salud mental.`},
+  {id:26,sys:"legal",q:`¿Cuál es el signo de certeza de aborto provocado?`,opts:["Expulsión de la placenta en un segundo tiempo", "Hemorragia abundante e infección", "Erosiones en fondo de saco vaginal", "Perforación uterina"],c:3,exp:`La PERFORACIÓN UTERINA es el único signo de certeza de aborto provocado (por maniobra instrumental). La hemorragia e infección ocurren también en abortos espontáneos. Las erosiones vaginales son inespecíficas. Solo la perforación implica necesariamente una maniobra externa.`},
+  {id:27,sys:"legal",q:`El consentimiento informado en la práctica médica e investigación en humanos (Pregunta 27) es:`,opts:["Una dispensa eximente de malpraxis dada por el paciente", "Una obligación legal", "Un hecho consuetudinario de buena práctica", "Un decisorio médico basado en la justa causa moral"],c:1,exp:`El CI es una OBLIGACIÓN LEGAL (Ley 26.529). No exime de responsabilidad por malpraxis. Se basa en el derecho del paciente a la autodeterminación. Requiere información comprensible, capacidad de decisión y voluntariedad del paciente.`},
+  {id:28,sys:"ginecologia",q:`El índice de Pearl, en anticoncepción, evalúa:`,opts:["Reversibilidad", "Eficacia", "Inocuidad", "Aceptabilidad"],c:1,exp:`El ÍNDICE DE PEARL mide la EFICACIA anticonceptiva: número de embarazos no planificados por cada 100 mujeres/año de uso. A menor índice → mayor eficacia. No evalúa seguridad (inocuidad), reversibilidad ni aceptabilidad.`},
+  {id:29,sys:"ginecologia",q:`¿Cuál es el signo más frecuente en un carcinoma papilar de mama?`,opts:["Nódulo palpable subareolar", "Derrame sanguinolento por el pezón", "Adenopatía axilar y nódulo mamario reconocido semiológicamente", "Retracción del pezón"],c:0,exp:`El NÓDULO PALPABLE (generalmente subareolar) es el signo más frecuente del carcinoma papilar de mama. El derrame sanguinolento es más específico del carcinoma papilar intraductal pero no el más frecuente en general. La detección temprana se hace por mamografía antes de ser palpable.`},
+  {id:30,sys:"ginecologia",q:`¿Cuál es la opción correcta respecto de la mamografía?`,opts:["Se debe realizar en el control del segundo trimestre del embarazo", "Sirve para diferenciar imágenes sólidas de quísticas", "Es de gran utilidad en las pacientes más jóvenes", "Se debe realizar como screening anual a partir de los 40 años"],c:3,exp:`SCREENING MAMOGRÁFICO anual desde los 40 años. NO durante el embarazo (tejido más denso + radiación). Para distinguir sólido/quístico → ECOGRAFÍA. En jóvenes la mama densa hace que la mamografía sea menos efectiva; se prefiere ecografía.`},
+  {id:31,sys:"ginecologia",q:`¿Cuál de los siguientes gestágenos, usados en anticonceptivos orales, tiene mayor efecto sobre el metabolismo lipídico?`,opts:["Drospirenona", "Desogestrel", "Gestodeno", "Noretisterona"],c:3,exp:`La NORETISTERONA (1ª generación) tiene mayor efecto androgénico y sobre lípidos: ↑LDL, ↓HDL. Los gestágenos de 3ª generación (desogestrel, gestodeno) y la drospirenona tienen perfil lipídico más favorable o neutro.`},
+  {id:32,sys:"ginecologia",q:`¿La anomalía cromosómica que produce azoospermia primaria es?`,opts:["Síndrome de Klinefelter", "Síndrome de Turner", "Síndrome de Savage", "Síndrome de Rokitansky"],c:0,exp:`El SÍNDROME DE KLINEFELTER (47,XXY) causa atrofia tubular testicular → azoospermia primaria. Turner = 45,X en mujeres. Rokitansky = ausencia de útero/vagina en mujer 46,XX. Savage = falla ovárica prematura. Solo Klinefelter afecta la espermatogénesis masculina.`},
+  {id:33,sys:"ginecologia",q:`¿Cómo se monitorea una inducción de la ovulación?`,opts:["Con controles ecográficos", "Con dosajes de FSH", "Con la temperatura basal", "a y b son correctas"],c:3,exp:`El monitoreo estándar de inducción de ovulación combina ECOGRAFÍA TRANSVAGINAL (crecimiento folicular) + DOSAJE DE ESTRADIOL y/o LH. La temperatura basal solo detecta ovulación a posteriori; es insuficiente y poco precisa para guiar el tratamiento.`},
+  {id:34,sys:"ginecologia",q:`El tratamiento neoadyuvante en cáncer de mama significa:`,opts:["El que se realiza previo a la cirugía oncológica", "El que se realiza luego de la cirugía oncológica", "Es el conjunto de medidas paliativas en la etapa terminal", "Es el que se realiza solamente en los sarcomas de la mama"],c:0,exp:`NEOADYUVANTE = tratamiento sistémico (QT/hormonal/anti-HER2) PREVIO a la cirugía. Objetivos: reducir el tumor, evaluar respuesta, posibilitar cirugía conservadora. ADYUVANTE = después de cirugía. PALIATIVO = en enfermedad avanzada terminal.`},
+  {id:35,sys:"ginecologia",q:`¿Cuál es el factor pronóstico más importante en el éxito de la Fertilización Asistida?`,opts:["La edad de la mujer", "La calidad del ovocito", "El sitio de transferencia embrionaria", "La calidad del espermatozoide"],c:0,exp:`La EDAD DE LA MUJER es el factor más determinante: a mayor edad → menor reserva ovárica + peor calidad ovocitaria → más aneuploidías → menor tasa de éxito. La calidad del ovocito es en gran medida consecuencia directa de la edad materna.`},
+  {id:36,sys:"ginecologia",q:`Los factores de riesgo más importantes para la Neoplasia Intraepitelial Vaginal (VAIN) son:`,opts:["Antecedente de histerectomía por SIL de alto grado", "Tabaquismo", "Inmunosupresión", "Todas son correctas"],c:3,exp:`TODAS son correctas: histerectomía por SIL alto grado + tabaquismo + inmunosupresión. El VPH (tipos 16 y 18) es el factor etiológico central. El tabaquismo reduce la inmunidad local y la inmunosupresión impide controlar la infección viral.`},
+  {id:37,sys:"ginecologia",q:`En el síndrome de Morris existe la presencia de:`,opts:["Gónadas masculinas", "Gónadas femeninas con presencia de andrógenos", "Cariotipo XX", "Cariotipo XO"],c:0,exp:`Síndrome de Morris (insensibilidad a andrógenos): GÓNADAS MASCULINAS (testículos) + CARIOTIPO 46,XY + fenotipo femenino por mutación del receptor androgénico. Hay amenorrea primaria, vagina corta, ausencia de útero y trompas. Las gónadas deben extirparse por riesgo de malignización.`},
+  {id:38,sys:"ginecologia",q:`Se define HTA en el embarazo como:`,opts:["TA sistólica ≥140 y/o diastólica ≥90 mmHg en 2 tomas separadas por 6 hs en una semana", "TA sistólica ≥150 y/o diastólica ≥90 mmHg en una sola toma en una semana", "TA sistólica ≥130 y/o diastólica ≥90 mmHg en 2 tomas separadas por 1 hora", "TA sistólica ≥150 y/o diastólica ≥90 mmHg en 2 tomas separadas por 6 hs"],c:0,exp:`HTA en embarazo: TA ≥140/90 mmHg en 2 mediciones separadas por al menos 4-6 hs. Es la base diagnóstica de preeclampsia junto con proteinuria u otros criterios de severidad (después de semana 20). La opción a usa el umbral correcto (140/90) con 2 tomas.`},
+  {id:39,sys:"ginecologia",q:`Gestante 35 años, 38 sem, TA 150/110, plaquetas 95.000, TGO 180, TGP 165, proteinuria +++. ¿Sospecha diagnóstica?`,opts:["Síndrome de HELLP", "Preeclampsia", "Eclampsia leve", "Preeclampsia sobreimpuesta a HTA crónica"],c:0,exp:`SÍNDROME DE HELLP: Hemolysis + Elevated Liver enzymes (TGO/TGP elevadas) + Low Platelets (95.000). HTA severa + proteinuria +++ + enzimas hepáticas elevadas + trombocitopenia = HELLP. La eclampsia requiere convulsiones (no presentes). Es urgencia obstétrica.`},
+  {id:40,sys:"ginecologia",q:`Se define como hipertensión arterial crónica:`,opts:["TA ≥140/90 descubierta por primera vez después de la semana 20 de gestación", "TA ≥140/90 asociada a la presencia de proteinuria", "Cifras ≥150/100 asociadas a daño de órgano blanco", "HTA que se diagnostica por primera vez durante el embarazo y no resuelve hasta las 12 semanas postparto"],c:3,exp:`HTA CRÓNICA en embarazo: preexistente al embarazo (antes de semana 20) o que PERSISTE más allá de las 12 semanas postparto. Si se descubre después de semana 20 → hipertensión gestacional. La opción a describe HTA gestacional, la b describe preeclampsia.`},
+  {id:41,sys:"ginecologia",q:`¿Cómo se interpreta un resultado de tira cualitativa con 2 cruces (++) en proteinuria al acecho?`,opts:["Equivalente a un valor menor de 30 mg/dl", "Entre 300 a 1000 mg/dl", "Entre 100 a 300 mg/dl", "Mayor a 300 mg/24 hs"],c:2,exp:`Escala de tira reactiva: 0/trazas <10 mg/dl | 1+ ≈ 30 mg/dl | 2+ = 100-300 mg/dl | 3+ = 300-1000 mg/dl | 4+ >1000 mg/dl. Las 2 cruces corresponden a 100-300 mg/dl. La opción d confunde concentración con excreción en 24 hs (diferente medición).`},
+  {id:42,sys:"ginecologia",q:`¿Cuál es el valor normal de fibrinógeno en el embarazo?`,opts:["100 a 200 mg%", "50 a 100 mg%", "300 a 400 mg%", "200 a 400 mg%"],c:2,exp:`Durante el embarazo el fibrinógeno AUMENTA fisiológicamente (estado procoagulante). Los valores normales en embarazadas son 300-600 mg/dl (vs 200-400 mg/dl en no embarazadas). La opción c (300-400 mg%) es la más correcta del listado dado.`},
+  {id:43,sys:"ginecologia",q:`Con respecto al sulfato de magnesio, marque la INCORRECTA:`,opts:["Los receptores NMDA son estimulados por el sulfato de magnesio", "Es una droga de primera línea para la prevención de las convulsiones eclámpticas", "En el feto produce una disminución de la variabilidad de la FCF", "En el monitoreo clínico se debe garantizar una diuresis mayor a 100 ml/hora"],c:0,exp:`INCORRECTA: El MgSO₄ ANTAGONIZA (bloquea) los receptores NMDA, NO los estimula. Ese bloqueo es la base de su efecto anticonvulsivante y neuroprotector. Las demás afirmaciones son correctas: es de primera línea en eclampsia, reduce variabilidad FCF, y se monitorea con diuresis >100 ml/h.`},
+  {id:44,sys:"ginecologia",q:`Ante un test de VDRL positivo en el primer trimestre de embarazo, usted:`,opts:["Concluye que la paciente padece sífilis", "Solicita nuevo VDRL para evaluar la curva", "Completa el estudio con FTA-Abs (reacción de absorción de anticuerpos fluorescentes antitreponema)", "Completa el estudio con microscopía de fondo oscuro"],c:2,exp:`VDRL positivo → confirmar con prueba TREPONÉMICA (FTA-Abs o TPPA). El VDRL es inespecífico (falsos positivos en embarazo, LES, etc.). Si se confirma → penicilina benzatínica, único tratamiento eficaz para prevenir sífilis congénita. La microscopía de fondo oscuro requiere lesiones activas.`},
+  {id:45,sys:"neurologia",q:`La primera alteración de la enfermedad de Alzheimer es de:`,opts:["Memoria retrógrada", "Memoria emocional", "Praxias", "Memoria anterógrada"],c:3,exp:`La MEMORIA ANTERÓGRADA (formación de nuevos recuerdos) es la primera en afectarse en Alzheimer, por compromiso temprano del hipocampo y córtex entorrinal. La memoria remota (retrógrada) se preserva por más tiempo. Las praxias se afectan en estadios avanzados.`},
+  {id:46,sys:"neurologia",q:`¿Cuál es la dosis equivalente del alprazolam en relación al clonazepam?`,opts:["0.25 mg", "0.50 mg", "1 mg", "2 mg"],c:2,exp:`Según el documento: 1 mg de clonazepam equivale a 1 mg de alprazolam (relación 1:1). Nota: existen variaciones en distintas tablas de equivalencia, pero la respuesta indicada en el documento es 1 mg.`},
+  {id:47,sys:"neurologia",q:`La agorafobia se caracteriza por:`,opts:["Ansiedad y preocupación excesivas acerca de actividades o acontecimientos", "Dificultad para concentrarse o mantener la mente en blanco", "Temor/ansiedad marcados a estar en espacios abiertos o lugares cerrados", "Ocurre exclusivamente durante el transcurso de un delirium"],c:2,exp:`AGORAFOBIA: temor intenso a situaciones donde escapar sería difícil o la ayuda inaccesible (espacios abiertos, cerrados, multitudes, transporte). Frecuentemente asociada al trastorno de pánico. Las opciones a y b describen ansiedad generalizada. No se limita al delirium.`},
+  {id:48,sys:"neurologia",q:`El diagnóstico de una demencia se hace mediante:`,opts:["Historia clínica más neuropsicología", "Historia clínica más análisis de laboratorio", "Historia clínica más imagen de cerebro", "Historia clínica, análisis de laboratorio, neuropsicología e imagen de cerebro"],c:0,exp:`El diagnóstico de demencia es fundamentalmente CLÍNICO: historia clínica + evaluación NEUROPSICOLÓGICA. Los análisis de laboratorio descartan causas reversibles. Las imágenes apoyan el diagnóstico etiológico. Pero la combinación mínima necesaria es historia + neuropsicología.`},
+  {id:49,sys:"neurologia",q:`¿Cuál de la siguiente sintomatología se corresponde con una crisis de angustia (ataque de pánico)?`,opts:["Palpitaciones, sensación de ahogo, despersonalización y episodios de flashbacks", "Parestesias, temblores, sueños vívidos y náuseas", "Miedo a perder el control, sensación de opresión torácica y miedo a morir", "Insomnio, diarrea y sudoración"],c:2,exp:`La crisis de angustia o ataque de pánico se caracteriza por miedo intenso a perder el control o morir + síntomas físicos (opresión torácica, palpitaciones, disnea). Los FLASHBACKS son propios del TEPT. Los sueños vívidos no son típicos del pánico.`},
+  {id:50,sys:"neurologia",q:`El concepto de alucinación hace referencia a:`,opts:["Representación de un objeto en dos o tres dimensiones", "Alteración sensoperceptiva donde el sujeto critica su trastorno y no cree en la realidad del objeto", "Percepción sin objeto real que estimula nuestros sentidos", "Percepción deformada de un objeto real"],c:2,exp:`ALUCINACIÓN: percepción sin estímulo externo real, vivida como real por el paciente. La opción b describe PSEUDOALUCINACIÓN (el sujeto reconoce que no es real). La opción d describe ILUSIÓN (distorsión de un estímulo real presente).`},
+  {id:51,sys:"neurologia",q:`¿Se puede definir a la apraxia como?`,opts:["Incapacidad para realizar actos motores y comprender consignas", "Incapacidad para realizar actos motores con buena comprensión de consignas", "Incapacidad para realizar actos motores en presencia de tono muscular y sensibilidad normales", "Incapacidad de realizar gestos con aparato de ejecución alterado"],c:2,exp:`APRAXIA: incapacidad de realizar movimientos aprendidos voluntariamente, con fuerza, tono, sensibilidad y comprensión INTACTOS. Si hay déficit motor o sensitivo → no es apraxia. La opción d es incorrecta porque si el aparato de ejecución está alterado, es un trastorno motor primario.`},
+  {id:52,sys:"neurologia",q:`¿La agnosia es?`,opts:["Incapacidad de reconocer objetos por déficit sensorial", "Incapacidad de reconocer rostros por medio de dos sentidos", "Incapacidad de reconocer objetos por medio de algún sentido", "Incapacidad de reconocer rostros por déficit atencional"],c:2,exp:`AGNOSIA: incapacidad de reconocer estímulos a través de un sentido, a pesar de que la función sensorial está INTACTA. No se explica por déficit sensorial, motor, del lenguaje ni atencional. La prosopagnosia (no reconocer rostros) es una forma específica.`},
+  {id:53,sys:"neurologia",q:`¿El mecanismo de represión para la teoría psicoanalítica es?`,opts:["Un mecanismo de proyección", "Un mecanismo de huida", "Un mecanismo de defensa", "Un mecanismo de preservación"],c:2,exp:`La REPRESIÓN es el mecanismo de DEFENSA fundamental en el psicoanálisis freudiano: el yo excluye del consciente pensamientos, deseos o recuerdos inaceptables, manteniéndolos en el inconsciente. La proyección es otro mecanismo de defensa diferente.`},
+  {id:54,sys:"neurologia",q:`La líbido es para la teoría psicoanalítica:`,opts:["La energía dinámica del impulso sexual", "La pulsión de muerte", "La pulsión de vida", "Eros y Tánatos"],c:0,exp:`La LÍBIDO es la energía psíquica asociada a la pulsión sexual (impulso sexual). Es parte de Eros pero no es sinónimo completo de 'pulsión de vida'. Tánatos = pulsión de muerte. Eros y Tánatos son los dos grandes tipos de pulsiones, pero la líbido específicamente refiere al impulso sexual.`},
+  {id:55,sys:"cardiologia",q:`En el fondo de ojo de un paciente con endocarditis infecciosa, ¿qué espera encontrar?`,opts:["Manchas de Osler", "Microaneurismas", "Manchas de Roth", "Edema de papila"],c:2,exp:`MANCHAS DE ROTH: áreas blanquecinas con borde hemorrágico en la retina, por embolias sépticas en endocarditis. Se ven en el FONDO DE OJO. Osler = nódulos dolorosos en piel/yemas de dedos. Microaneurismas = retinopatía diabética. Edema de papila = HIC.`},
+  {id:56,sys:"cardiologia",q:`Las manchas de Roth se presentan en:`,opts:["Pulpejo de los dedos", "Uñas", "Retinas", "Miembros inferiores"],c:2,exp:`Manchas de ROTH = RETINAS (fondo de ojo). Manchas de Osler = pulpejo de dedos (dolorosas). Hemorragias en astilla = uñas. Nódulos de Janeway = palmas y plantas (indoloros). Esta distinción es clave en endocarditis infecciosa.`},
+  {id:57,sys:"gastro",q:`¿Cuál de los siguientes pacientes presenta más probablemente una pancreatitis aguda?`,opts:["Dolor con propagación a dorso de 2 meses de evolución, calma con inclinación hacia adelante, pérdida de peso", "Paciente con síndrome coledociano de presentación aguda, dolor de epigastrio a dorso y vómitos", "Síndrome coledociano con dolor en hipocondrio derecho de varios meses de evolución", "Ardor epigástrico postprandial con plenitud y heces alquitranadas"],c:1,exp:`Pancreatitis AGUDA: inicio BRUSCO + dolor epigástrico irradiado en cinturón al dorso + náuseas/vómitos + posible síndrome coledociano (por litiasis biliar, causa más frecuente). La opción 1 sugiere Ca. páncreas/pancreatitis crónica. La opción 4 sugiere úlcera con sangrado.`},
+  {id:58,sys:"gastro",q:`Ana, 67 años, diabética, con patología de vía biliar, con síntomas de colangitis aguda. ¿La causa más común es?`,opts:["Colestasis", "Parasitosis", "Litiasis coledociana", "Pancreatitis aguda"],c:2,exp:`La LITIASIS COLEDOCIANA es la causa más frecuente de colangitis aguda: un cálculo en el colédoco obstruye la vía biliar → infección bacteriana ascendente. Tríada de Charcot: fiebre + ictericia + dolor. La parasitosis es rara y regional. La colestasis es consecuencia, no causa.`},
+  {id:59,sys:"gastro",q:`¿Cuál de las siguientes pruebas solicita para hacer diagnóstico de esteatorrea?`,opts:["Test de secretina", "Sangre oculta en materia fecal", "Test de Van de Kamer", "Elastasa en materia fecal"],c:2,exp:`TEST DE VAN DE KAMER: estándar de oro para esteatorrea. Cuantifica grasa fecal en 72 hs con dieta de 100 g/día. Diagnóstico si >7 g de grasa/día. La elastasa evalúa insuficiencia pancreática (causa de esteatorrea) pero no la esteatorrea directamente. Sangre oculta = pesquisa de sangrado.`},
+  {id:60,sys:"medicina-interna",q:`Varón 65 años, PSA 4 ng/ml, tacto rectal con próstata aumentada e IRREGULAR. ¿Conducta adecuada?`,opts:["Realizar biopsia guiada por ecografía transrectal", "Repetir PSA al año", "Solicitar RMN pélvica", "Realizar tacto rectal y PSA a los 3 y 6 meses"],c:0,exp:`Tacto rectal ANORMAL (irregularidad/consistencia pétrea) = indicación de BIOPSIA prostática guiada por ecografía transrectal, independientemente del valor de PSA. No se puede diferir el diagnóstico con signos clínicos de malignidad. La RM puede complementar pero no reemplaza la biopsia inicial.`},
+  {id:61,sys:"cardiologia",q:`La presencia de hiperreflexia con fasciculaciones debe hacer suponer:`,opts:["Enfermedad de Parkinson", "Isquemia talámica", "Polineuritis", "Esclerosis lateral amiotrófica"],c:3,exp:`Hiperreflexia = neurona motora SUPERIOR afectada. Fasciculaciones = neurona motora INFERIOR afectada. La ELA afecta AMBAS simultáneamente. Parkinson = ganglios basales (no causa esta combinación). Polineuritis = hiporreflexia. Isquemia talámica = trastornos sensitivos.`},
+  {id:62,sys:"medicina-interna",q:`Julia, 20 años, enfermedad renal poliquística, Hb 4 g/dl, edema +++, falta de aire, astérixis y debilidad. ¿Diagnóstico?`,opts:["Enfermedad renal crónica terminal", "Glomeruloesclerosis focal y segmentaria", "Síndrome nefrótico", "Enfermedad de cambios mínimos"],c:0,exp:`ERCT por poliquistosis renal: la poliquistosis progresa a insuficiencia renal terminal. Anemia severa + edema + disnea + astérixis (encefalopatía urémica) son signos clásicos de uremia avanzada. El síndrome nefrótico no explica la astérixis ni la anemia tan grave.`},
+  {id:63,sys:"cardiologia",q:`Mujer 38 años, rigidez matutina >1h, artritis MCF bilateral, FR 20 UI/ml (VN <10), anti-CCP 3x el normal, VSG 41, ANA positivo, anti-DNA negativo. ¿Diagnóstico?`,opts:["Fiebre reumática", "Artritis reumatoide", "Lupus eritematoso sistémico", "Endocarditis infecciosa"],c:1,exp:`ARTRITIS REUMATOIDE: rigidez matutina >1h + artritis MCF simétrica + FR positivo + anti-CCP muy elevado (específico ~95% para AR) + VSG alta. ANA positivo puede verse en AR. Anti-DNA negativo aleja LES. Fiebre reumática es migratoria y aguda, endocarditis no explica este patrón articular.`},
+  {id:64,sys:"neurologia",q:`Mujer 35 años con debilidad que aumenta con actividad repetitiva y mejora con reposo, ptosis, diplopía, reflejos conservados. ¿Diagnóstico más probable?`,opts:["Síndrome miasteniforme de Eaton-Lambert", "Síndrome de Guillain-Barré", "Miastenia gravis", "Botulismo"],c:2,exp:`MIASTENIA GRAVIS: debilidad fluctuante que empeora con el esfuerzo y mejora con el reposo. Ptosis + diplopía + debilidad proximal + reflejos normales = presentación clásica. Eaton-Lambert mejora con ejercicio. Guillain-Barré = debilidad ascendente + arreflexia. Botulismo = parálisis descendente aguda.`},
+  {id:65,sys:"neurologia",q:`La miastenia gravis es una enfermedad. Señale la correcta:`,opts:["Degenerativa", "Nutricional", "Autoinmune", "Vascular"],c:2,exp:`AUTOINMUNE: el sistema inmune produce anticuerpos contra los receptores de acetilcolina (anti-AChR) en la unión neuromuscular → bloqueo de la transmisión neuromuscular → debilidad fluctuante. No es degenerativa (no destruye tejidos progresivamente), nutricional ni vascular.`},
+  {id:66,sys:"gastro",q:`Mujer 42 años, diarrea habitual, ligero descenso de glóbulos rojos, IgA anti-endomisio y anti-transglutaminasa ELEVADAS, p-ANCA normal, ASCA no elevado. ¿Sospecha?`,opts:["Enfermedad de Crohn", "Colitis ulcerosa", "Cáncer de colon", "Enfermedad celíaca"],c:3,exp:`ENFERMEDAD CELÍACA: anticuerpos IgA anti-endomisio y anti-transglutaminasa son marcadores serológicos específicos. Diarrea + anemia por malabsorción + estos anticuerpos = celíaca. Crohn → ASCA+. CU → p-ANCA+. Se confirma con biopsia duodenal (atrofia de vellosidades).`},
+  {id:67,sys:"medicina-interna",q:`Lucas, 74 años, internado 13 días por ICC hace 2 semanas, ahora con fiebre y matidez + crepitantes + aumento de vibraciones vocales en base pulmonar derecha. ¿Diagnóstico?`,opts:["Neumotórax", "Derrame pleural", "Neumonía de la comunidad", "Neumonía intrahospitalaria"],c:3,exp:`NEUMONÍA INTRAHOSPITALARIA: hospitalización reciente (< 14 días) + signos de consolidación (matidez + crepitantes + aumento de vibraciones vocales). Para diagnósticar NAC el paciente no debe haber estado internado en los últimos 14 días. Neumotórax = hiperresonancia. Derrame = vibraciones vocales disminuidas.`},
+  {id:68,sys:"cardiologia",q:`¿Cuál es el tumor más frecuente del mediastino anterior?`,opts:["Timoma", "Quiste broncogénico", "Quiste esofágico", "Tumor neurogénico"],c:0,exp:`TIMOMA: tumor más frecuente del mediastino ANTERIOR. Regla de los 4T del mediastino anterior: Timoma, Teratoma, Tiroides ectópica, 'Terrible lymphoma'. Quiste broncogénico = mediastino medio. Tumor neurogénico = mediastino posterior.`},
+  {id:69,sys:"cardiologia",q:`Rocío, 21 años, palpitaciones, fibrilación auricular en ECG, nerviosismo, diarrea y pérdida de peso. ¿Causa más probable?`,opts:["Aorta bicúspide", "Miocardiopatía chagásica", "Cardiopatía isquémica", "Hipertiroidismo"],c:3,exp:`HIPERTIROIDISMO: palpitaciones + FA + nerviosismo + diarrea + pérdida de peso en mujer joven es la tríada clásica. El hipertiroidismo es causa frecuente de FA en jóvenes sin cardiopatía estructural. Cardiopatía isquémica es muy poco probable a los 21 años.`},
+  {id:70,sys:"cardiologia",q:`Paciente 60 años postinfarto, astenia y sequedad cutánea, TSH 32 UI, T4=6 (VN 8-12). ¿Conducta?`,opts:["Indicar 30 mg de danantizol", "Indicar 30 mg de atorvastatina", "Indicar 25 mcg de levotiroxina", "Repetir análisis en 6 meses"],c:2,exp:`HIPOTIROIDISMO CLÍNICO: TSH muy elevada + T4 baja + síntomas (astenia, sequedad). Tratamiento = LEVOTIROXINA. Dosis BAJA inicial (25 mcg) en paciente con antecedente cardíaco para evitar aumento brusco de demanda miocárdica. No se justifica esperar 6 meses con hipotiroidismo clínico sintomático.`},
+  {id:71,sys:"cardiologia",q:`Varón 78 años, fumador 70 paq/año, claudicación a los 200 m. ¿Hallazgo semiológico más importante en el examen físico?`,opts:["Piel hiperqueratósica con dermatitis ocre en ambos miembros inferiores", "Soplo sistólico con disminución de la intensidad del segundo ruido", "Edema con signos de fovea en el miembro inferior izquierdo", "Disminución o ausencia de pulsos periféricos en ambos miembros inferiores"],c:3,exp:`CLAUDICACIÓN INTERMITENTE por EAP (enfermedad arterial periférica): el hallazgo más importante es la DISMINUCIÓN/AUSENCIA DE PULSOS PERIFÉRICOS (femoral, poplíteo, pedio, tibial posterior). Dermatitis ocre = insuficiencia venosa. Edema con fovea = problema venoso/linfático.`},
+  {id:72,sys:"medicina-interna",q:`Mujer 65 años, fiebre 38.8°C, dolor torácico tipo puntada de costado, tos con expectoración. ¿Signo más probable en el examen respiratorio?`,opts:["Estertores crepitantes", "Disnea", "Roncus y sibilancias", "Matidez en columna"],c:0,exp:`Cuadro de NEUMONÍA ADQUIRIDA EN LA COMUNIDAD. Los ESTERTORES CREPITANTES son el signo auscultatorio más característico (secreciones alveolares). La disnea es síntoma no signo. Roncus y sibilancias = asma/EPOC. La matidez puede existir pero los crepitantes son el hallazgo auscultatorio más típico.`},
+  {id:73,sys:"gastro",q:`¿Cuál de los siguientes es un criterio diagnóstico de síndrome de colon irritable?`,opts:["El dolor abdominal mejora con la defecación", "Presencia de dolor abdominal sin relación con la frecuencia de evacuaciones", "Dolor abdominal sin relación con la frecuencia ni la forma de las heces", "Presencia de dolor abdominal dos veces por día en los últimos seis meses"],c:0,exp:`Criterios de Roma IV para SCI: dolor abdominal recurrente ≥1 día/semana en los últimos 3 meses, relacionado con: defecación (mejora o empeora), cambio en frecuencia de deposiciones, o cambio en forma de las heces. La opción 1 cumple uno de estos criterios. Las opciones 2 y 3 NIEGAN la relación, que sí debe existir.`},
+  {id:74,sys:"salud-publica",q:`En 2013 se aplicó vacuna anti-Hepatitis A a contactos menores de 15 años en un bloqueo epidemiológico. ¿Qué nivel de prevención se aplicó?`,opts:["Primario Inespecífico", "Primario Específico", "Secundario", "Terciario"],c:1,exp:`PREVENCIÓN PRIMARIA ESPECÍFICA: se aplica una vacuna (intervención dirigida a una enfermedad concreta) para prevenir la aparición de la enfermedad en contactos expuestos aún sanos. Primario inespecífico = medidas generales (higiene, nutrición). Secundario = diagnóstico/tratamiento precoz.`},
+  {id:75,sys:"salud-publica",q:`¿Cuál subsistema de salud tiene el mayor efecto redistributivo sobre los recursos financieros en Argentina?`,opts:["El público", "La seguridad social", "El privado", "Todos los subsistemas tienen el mismo efecto redistributivo"],c:0,exp:`El subsistema PÚBLICO tiene el mayor efecto redistributivo: se financia con impuestos generales y garantiza acceso universal, especialmente a la población más vulnerable sin capacidad de pago. Transfiere recursos de sectores de mayor ingreso a los de menor ingreso.`},
+  {id:76,sys:"salud-publica",q:`¿Cuáles son las funciones de los ministerios y secretarías de salud?`,opts:["Son instituciones que prestan servicios de salud a la población", "Son instituciones encargadas de formar personal de salud", "Son instituciones que organizan, coordinan y evalúan las acciones de salud", "Son instituciones que llevan a cabo tareas complementarias de alta complejidad"],c:2,exp:`Los ministerios son organismos RECTORES: ORGANIZAN, COORDINAN y EVALÚAN las políticas de salud. NO prestan servicios directamente (eso hacen hospitales y centros de salud). NO forman personal (eso hacen las universidades). Son la autoridad sanitaria de planificación y regulación.`},
+  {id:77,sys:"salud-publica",q:`La Ley 26.682 de medicina prepaga en Argentina establece que:`,opts:["Las empresas deben cubrir prestaciones básicas para las personas con discapacidad", "La cobertura puede ser inferior a la del Programa Médico Obligatorio", "Las empresas pueden rechazar afiliados según edad o preexistencias", "Las empresas pueden aumentar las cuotas sin participación del gobierno"],c:0,exp:`Ley 26.682: las prepagas deben cubrir como MÍNIMO el PMO Y las prestaciones básicas para personas con discapacidad (Ley 24.901). NO pueden rechazar afiliados por preexistencias ni aumentar cuotas sin autorización estatal. Esto garantiza acceso equitativo.`},
+  {id:78,sys:"salud-publica",q:`Menores de 15 años: CABA 18% — Corrientes 32%. Al comparar la estructura de población se observa:`,opts:["La base de la pirámide de Corrientes es más ancha que en CABA", "El porcentaje de menores de 15 años es mayor en CABA", "El 18% de la población en CABA no trabaja", "Faltan datos de mortalidad para comparar las bases de las pirámides"],c:0,exp:`Mayor proporción de menores de 15 años en Corrientes (32%) → BASE MÁS ANCHA en la pirámide = población más joven. En CABA (18%) la pirámide es más envejecida. La base de la pirámide refleja la proporción de población joven, no requiere datos de mortalidad para esta comparación.`},
+  {id:79,sys:"salud-publica",q:`Esperanza de vida al nacer: CABA 76 años — Corrientes 72 años. ¿Qué concluye?`,opts:["En CABA un nacido en 2019 puede vivir 76 años MÁS que en Corrientes", "Para analizar el dato se debe discriminar por sexo", "La esperanza de vida se modifica por la tasa de natalidad", "En Corrientes un nacido vivo en el año 2019 se estima que vivirá 72 años"],c:3,exp:`Esperanza de vida = estimación de años que vivirá un recién nacido si las condiciones actuales se mantienen. En Corrientes → 72 años. La diferencia es 4 años (no 76 más). La esperanza de vida es influenciada por mortalidad en todas las edades, no solo por natalidad.`},
+  {id:80,sys:"salud-publica",q:`AVPP por causas infecciosas: CABA 62 — Corrientes 73 (cada 10.000 hab). Del análisis del indicador surge:`,opts:["Es imposible comparar el dato dada la diferencia en la mortalidad", "Suceden más internaciones por infecciones en CABA que en Corrientes", "La magnitud de AVPP por causas infecciosas es mayor en Corrientes que en CABA", "No se puede comparar AVPP por la diferencia en la esperanza de vida al nacer"],c:2,exp:`AVPP más alto en Corrientes (73 vs 62) → MAYOR IMPACTO de muertes prematuras por causas infecciosas en Corrientes. El indicador está estandarizado por 10.000 habitantes, por lo que ES COMPARABLE entre regiones. No se refiere a internaciones sino a años de vida perdidos.`},
+  {id:81,sys:"salud-publica",q:`Tasa bruta de natalidad: CABA 1.5% — Corrientes 2.3%. Del análisis surge:`,opts:["Al finalizar el período fértil cada mujer tuvo un promedio de 2.3 hijos en Corrientes", "En CABA suceden 1.5 nacimientos cada cien habitantes por año", "Cada cien mujeres de 15 a 49 años suceden 2.3 nacimientos en Corrientes", "En CABA suceden menos nacimientos por año que en Corrientes"],c:3,exp:`TBN mayor en Corrientes (2.3%) → más nacimientos proporcionales por habitante que en CABA (1.5%). La opción a describe la Tasa Global de Fecundidad (TGF), diferente indicador. La TBN se expresa por cada 1.000 habitantes (no 100). La opción d es la correcta.`},
+  {id:82,sys:"salud-publica",q:`La Política Nacional de Medicamentos 2002 involucró 3 ejes: prescripción por nombre genérico, provisión pública gratuita de esenciales ambulatorios, y el tercero:`,opts:["Usar el nombre que se divulga en los medios científicos", "El uso racional de medicamentos", "Prohibir la publicidad de medicamentos", "Diseñar estrategias de difusión de esquemas terapéuticos"],c:1,exp:`Los 3 ejes de 2002: (1) Prescripción por nombre GENÉRICO, (2) Provisión PÚBLICA Y GRATUITA de medicamentos esenciales ambulatorios, (3) USO RACIONAL DE MEDICAMENTOS. Estos tres pilares buscaban acceso equitativo, calidad y uso adecuado de los fármacos.`},
+  {id:83,sys:"pediatria",q:`David, 8 meses, fiebre y tos 72 hs, tiraje intercostal leve, sibilancias espiratorias bilaterales. ¿Conducta inicial?`,opts:["Citar a control en el centro de salud en 24 a 48 horas", "Internar en observación en guardia con oxígeno", "Solicitar 2 hemocultivos", "Indicar meprednisona 1 mg/kg/día vía oral"],c:1,exp:`BRONQUIOLITIS: sibilancias + tiraje + lactante + cuadro viral. Requiere OBSERVACIÓN + OXIGENOTERAPIA si es necesario. Los corticoides NO están indicados en bronquiolitis. Los hemocultivos tampoco (sin signos de sepsis). No es suficiente el control en 24-48 hs con estos signos.`},
+  {id:84,sys:"pediatria",q:`Gabriela, 12 años, poliuria nocturna, gusto feo en la boca, adelgazamiento, glucosuria +++, cetonuria ++. ¿Conducta inicial más apropiada?`,opts:["Explicar que probablemente tenga una diabetes insípida", "Solicitar curva de tolerancia oral a la glucosa", "Solicitar sedimento de orina y urocultivo", "Solicitar glucemia, ionograma y estado ácido-base"],c:3,exp:`Cuadro de DEBUT DE DIABETES TIPO 1 con probable cetoacidosis. Conducta urgente: GLUCEMIA + IONOGRAMA + ESTADO ÁCIDO-BASE para confirmar hiperglucemia y evaluar estado metabólico. DI insípida = orina diluida, sin glucosuria. La curva de TTOG no se usa cuando hay sospecha clara de DM1 con cetosis.`},
+  {id:85,sys:"pediatria",q:`Pedro, 5 años, edema bipalpebral, orina oscura, TA 125/90, crepitantes bibasales, lesiones costrosas en piernas, hematuria y proteinuria. ¿Conducta inicial?`,opts:["Control ambulatorio en 24 horas", "Indicar metilprednisolona", "Internar al paciente", "Hidratación parenteral a necesidades basales más diuresis"],c:2,exp:`SÍNDROME NEFRÍTICO AGUDO (probable GNPE post-impétigo: lesiones costrosas en piernas). Con HTA + edema + hematuria + posible sobrecarga de volumen (crepitantes bibasales + infiltrado) → INTERNAR para monitoreo y manejo. Los corticoides no están indicados en GNPE. La hidratación IV podría empeorar la sobrecarga.`},
+  {id:86,sys:"pediatria",q:`Antonio, 8 meses, llanto paroxístico, masa en morcilla palpable, deposición rojo vinosa. ¿Conductas iniciales?`,opts:["Solicitar tomografía abdominal con doble contraste", "Solicitar ecografía abdominal y radiografía de abdomen de pie", "Indicar endoscopia digestiva alta", "Realizar dos hemocultivos"],c:1,exp:`INVAGINACIÓN INTESTINAL: llanto paroxístico + masa en morcilla + deposición tipo jalea de grosella. ECO ABDOMINAL (signo del donut/diana = diagnóstico) + Rx DE PIE (descartar perforación, contraindicaría enema). TAC = no es primera línea en lactantes + radiación. Endoscopia alta = no tiene utilidad aquí.`},
+  {id:87,sys:"pediatria",q:`Niña 5 años, erupción papular eritematosa áspera al tacto que predomina en pliegues, lengua en fresa, exudado amigdalino, adenomegalias cervicales. ¿Agente etiológico?`,opts:["Virus Coxsackie", "Virus herpes simple", "Estreptococo grupo A", "Mycoplasma pneumoniae"],c:2,exp:`ESCARLATINA por STREPTOCOCCUS PYOGENES (grupo A): erupción en lija + líneas de Pastia en pliegues + lengua en fresa + faringoamigdalitis purulenta + adenomegalias cervicales. Trato con penicilina/amoxicilina. Coxsackie = herpangina/enfermedad mano-pie-boca. Mycoplasma = neumonía atípica.`},
+  {id:88,sys:"pediatria",q:`Niño 18 meses con obstrucción de vía aérea por cuerpo extraño: tos inefectiva, cianosis y dificultad respiratoria severa. ¿Maniobra indicada?`,opts:["Desobstrucción manual", "Se para detrás y efectúa compresiones abdominales sobre el ombligo", "Lo acuesta boca arriba y compresiones en línea media del abdomen", "Se coloca el niño boca abajo sobre el antebrazo y da golpes en zona interescapular"],c:3,exp:`En menores de 2 años con obstrucción grave: GOLPES EN LA ESPALDA (zona interescapular) con el niño boca abajo sobre el antebrazo + 5 compresiones torácicas. La maniobra de Heimlich (compresiones abdominales) se usa en mayores de 2 años. SAP y AHA indican esta secuencia para lactantes.`},
+  {id:89,sys:"pediatria",q:`Julián, 18 meses, diarrea crónica 3 meses, deposiciones grumosas malolientes, vivienda precaria, agua de pozo. ¿Conducta diagnóstica inicial más adecuada?`,opts:["Búsqueda de adenovirus y rotavirus en materia fecal", "Parasitológico en fresco y seriado", "Coprocultivo con antibiograma", "Clearance de alfa-1 antitripsina"],c:1,exp:`Sospecha de GIARDIASIS (y otras parasitosis): diarrea crónica + heces grasosas/malolientes + factores de riesgo (agua de pozo, precariedad). El PARASITOLÓGICO EN FRESCO Y SERIADO es el estudio de primera línea. Adenovirus/rotavirus = diarrea AGUDA. Coprocultivo = sospecha bacteriana con fiebre o sangre.`},
+  {id:90,sys:"pediatria",q:`Raúl, 14 años, dolor testicular derecho súbito intenso, aumento de tamaño, reflejo cremastérico ausente. ¿Prueba diagnóstica de elección?`,opts:["Ecodoppler", "Transiluminación", "Ecografía sin Doppler", "Tomografía computada"],c:0,exp:`TORSIÓN TESTICULAR: urgencia urológica. El ECODOPPLER es la prueba de elección: evalúa el flujo sanguíneo testicular (disminuido o ausente en torsión). NO debe demorar la exploración quirúrgica si la sospecha clínica es alta. La TAC no tiene indicación en patología escrotal aguda.`},
+  {id:91,sys:"pediatria",q:`Ramiro, 5 meses, fiebre, abombamiento timpánico con eritema en oído derecho, congestión peritimpánica en oído izquierdo. ¿Conducta?`,opts:["Indicar miringotomía y cultivo de oído medio", "Indicar amoxicilina 80-90 mg/kg/día por 10 días, con control en 24-48 hs", "Indicar gotas óticas con ciprofloxacina e hidrocortisona", "Tratamiento parenteral con ceftriaxona"],c:1,exp:`OTITIS MEDIA AGUDA en menor de 6 meses = tratamiento antibiótico inmediato sin opción de espera. Primera línea: AMOXICILINA a dosis alta (80-90 mg/kg/día). Las gotas óticas son para OTITIS EXTERNA. La ceftriaxona parenteral se reserva para casos graves o falla de tratamiento oral.`},
+  {id:92,sys:"pediatria",q:`Aitor, 9 meses, enoftalmos, somnolencia, pliegue cutáneo persistente, relleno capilar 5 seg, extremidades frías, diarrea intensa 48 hs. ¿Conducta inicial?`,opts:["Indicar expansión con solución fisiológica", "Prueba de tolerancia oral y control ambulatorio en 24 horas", "Prueba de tolerancia oral y rehidratación en guardia", "Rehidratación mediante sonda nasogástrica"],c:0,exp:`DESHIDRATACIÓN GRAVE con compromiso hemodinámico (relleno capilar >2 seg, extremidades frías, somnolencia). Conducta: EXPANSIÓN IV INMEDIATA con solución fisiológica 0.9%, bolo 20 ml/kg en 20-30 minutos. La SNG se usa en deshidratación leve/moderada. La vía oral está contraindicada en deshidratación grave.`},
+  {id:93,sys:"pediatria",q:`Lactante 2 semanas: pulso braquial derecho firme, pulsos femorales bilaterales ausentes. ¿Complicación a largo plazo más probable tras corrección?`,opts:["Comunicación interventricular", "Comunicación interauricular", "Coartación de aorta", "Ductus arterioso permeable"],c:2,exp:`Pulsos braquiales presentes + pulsos femorales AUSENTES = signo clásico de COARTACIÓN DE AORTA. La pregunta es sobre complicaciones a largo plazo POST-corrección: recoartación e HTA residual son las más frecuentes. La CIV, CIA y DAP son cardiopatías distintas no relacionadas con este hallazgo.`},
+  {id:94,sys:"pediatria",q:`Ricardo, 4 años, fiebre 20 días, dolor en cadera, adenopatías, esplenomegalia, Hb 7, plaquetas 60.000, leucocitos 2.500, células atípicas en sangre periférica. ¿Diagnóstico?`,opts:["Leucemia linfoblástica aguda", "Anemia perniciosa", "Enfermedad de Hodgkin", "Neuroblastoma"],c:0,exp:`LLA: más frecuente en pediatría. PANCITOPENIA (anemia + trombocitopenia + leucopenia) + células atípicas (blastos) + fiebre + adenopatías + esplenomegalia + dolor óseo (en cadera) = presentación clásica. Diagnóstico confirmatorio: mielograma. Anemia perniciosa rarísima en niños pequeños.`},
+  {id:95,sys:"pediatria",q:`Joven 17 años, dolor testicular agudo, testículo elevado, reflejo cremastérico ausente. ¿Conducta inicial mientras se espera cirugía?`,opts:["Solicitar ecografía testicular con Doppler vascular", "Solicitar centellograma con tecnecio-99m", "Solicitar sedimento de orina y tinción de Gram", "Comenzar tratamiento con ciprofloxacina vía oral"],c:0,exp:`TORSIÓN TESTICULAR: urgencia quirúrgica. En paralelo a consultar cirugía, el ECODOPPLER puede apoyar el diagnóstico, pero NO debe retrasar la exploración quirúrgica. El centellograma no es de primera línea. La ciprofloxacina trata epididimitis, no torsión. El sedimento no es prioritario.`},
+  {id:96,sys:"pediatria",q:`¿Cuál es la causa más frecuente de intoxicación en niños menores de 5 años?`,opts:["Ingesta de plaguicidas", "Ingesta de bebidas alcohólicas", "Envenenamiento por plantas", "Ingesta de medicamentos"],c:3,exp:`INGESTA DE MEDICAMENTOS: los fármacos domésticos son más accesibles, atractivos por colores/formas/sabores, y son la principal causa de intoxicación en <5 años. Los plaguicidas tienen almacenamiento más controlado. Las plantas tóxicas son menos frecuentes en ambiente doméstico.`},
+  {id:97,sys:"pediatria",q:`Roberto, 15 meses, craneotabes, ensanchamiento de muñecas y espacios condrocostales, imagen en copa en las metáfisis en Rx. ¿Diagnóstico más probable?`,opts:["Escorbuto", "Pelagra", "Raquitismo", "Hipovitaminosis A"],c:2,exp:`RAQUITISMO carencial (déficit de vitamina D): craneotabes + rosario raquítico (ensanchamiento condrocostal) + ensanchamiento metafisario + imagen en COPA o en bocado en Rx son patognomónicos. Escorbuto = vit. C (hemorragias, encías). Pelagra = niacina (dermatitis, diarrea, demencia). Hipovit A = visión/piel.`},
+  {id:98,sys:"pediatria",q:`Rodrigo, 2 años, tos brusca durante la cena, sibilancias en campo medio pulmón derecho, radiolucidez marcada del pulmón derecho en Rx. ¿Conducta inicial?`,opts:["Internar y solicitar interconsulta con cirugía", "Internar y solicitar interconsulta con endoscopista", "Indicar corticoides orales y control ambulatorio en 24 horas", "Indicar salbutamol y control ambulatorio en 24 horas"],c:1,exp:`ASPIRACIÓN DE CUERPO EXTRAÑO bronquial derecho: tos súbita durante comida + atrapamiento aéreo unilateral. Tratamiento: BRONCOSCOPÍA RÍGIDA (endoscopista). La cirugía no es primera línea. Los corticoides y broncodilatadores no tratan la causa mecánica. Requiere internación urgente.`},
+  {id:99,sys:"pediatria",q:`Gabriel, 2 años, enfermedad celíaca confirmada (anti-transglutaminasa positivo + biopsia). ¿Información más adecuada para la familia?`,opts:["Debe hacer dieta libre de gluten hasta el cierre de los cartílagos de crecimiento", "Gabriel tendrá crecimiento normal si cumple indicaciones y controles regulares", "Si mejoran síntomas en un año de no recibir gluten, puede incorporarlo paulatinamente", "Es probable que pueda consumir gluten sin inconvenientes en la vida adulta"],c:1,exp:`La celiaquía es CRÓNICA Y PERMANENTE. La dieta libre de gluten es DE POR VIDA. Con dieta estricta, la mucosa intestinal se recupera y el crecimiento es NORMAL. NO se reintroduce el gluten: ni al año, ni de adulto, ni al cierre de cartílagos. El incumplimiento genera daño intestinal continuo.`},
+  {id:100,sys:"pediatria",q:`Mara, 10 años, tos seca persistente 15 días, hermana con mismo cuadro que mejoró con claritromicina, patrón hiliofugal bilateral en Rx. ¿Hipótesis diagnóstica?`,opts:["Neumonía atípica primaria", "Fibrosis quística de páncreas", "Tuberculosis primaria", "Neumonía bacteriana aguda"],c:0,exp:`NEUMONÍA ATÍPICA por Mycoplasma pneumoniae: tos seca persistente + inicio insidioso + contacto epidemiológico familiar + respuesta a macrólidos (claritromicina) + patrón intersticial bilateral en Rx. Frecuente en escolares/adolescentes. La NAC bacteriana tiene fiebre alta, mal estado general y condensación clara.`},
+  {id:101,sys:"pediatria",q:`Tobías, 10 años, varicela hace 48 hs. Hermana de 1 año con vacunas completas del calendario oficial. ¿Conducta para prevenir contagio?`,opts:["Administrar gammaglobulina hiperinmune", "Administrar vacuna más gammaglobulina hiperinmune", "Administrar vacuna de varicela", "Administrar Aciclovir vía oral"],c:2,exp:`La niña de 1 año ya recibió la vacuna de varicela del calendario argentino (incluida desde 2015). Si hay duda sobre la inmunidad o la vacuna fue reciente, la opción es VACUNA DE VARICELA (dentro de las 72 hs de exposición puede atenuar o prevenir la enfermedad). La gammaglobulina es para inmunocomprometidos.`},
+  {id:102,sys:"pediatria",q:`Fiorella, 6 años, anemia microcítica hipocrómica que no respondió a hierro oral en 3 meses. ¿Conducta adecuada?`,opts:["Solicitar electroforesis de hemoglobina", "Continuar tratamiento con hierro oral y controlar en un mes", "Solicitar sangre oculta en materia fecal", "Suspender hierro oral y administrar por vía parenteral"],c:0,exp:`Anemia microcítica REFRACTARIA AL HIERRO: sospechar TALASEMIA u hemoglobinopatía. La ELECTROFORESIS DE HEMOGLOBINA confirma el diagnóstico. No tiene sentido continuar hierro si no respondió en 3 meses de tratamiento correcto. Las talasemias no responden al hierro.`},
+  {id:103,sys:"legal",q:`Médico diagnostica lepra tuberculoide. El paciente pide absoluta reserva. ¿Conducta?`,opts:["Guarda secreto respetando el derecho personalísimo del paciente", "Notifica en 24 horas a la autoridad sanitaria conforme la Ley 15.465/60 por ser de notificación obligatoria", "Solo divulga la información a sus convivientes para evitar contagios", "Divulga solo si el paciente incumple la responsabilidad de cuidado"],c:1,exp:`La lepra es de NOTIFICACIÓN OBLIGATORIA (Ley 15.465/60). La justa causa LEGAL PREVALECE sobre el secreto profesional. El médico DEBE notificar a la autoridad sanitaria en 24 hs para control epidemiológico y seguimiento de contactos, independientemente de la voluntad del paciente.`},
+  {id:104,sys:"legal",q:`¿Cuál se considera 'lesión grave' según el Art. 90 del Código Penal?`,opts:["Desfiguración permanente del rostro", "Peligro de vida del ofendido", "Pérdida de un sentido, de un órgano, de un miembro, del uso de un miembro", "Dificultad permanente de la capacidad de engendrar o concebir"],c:3,exp:`Según el Art. 90 del CP argentino, TODAS las opciones son lesión grave: peligro de vida, debilidad permanente de la salud, pérdida/inutilización de órgano o miembro principal, pérdida de un sentido, desfiguración permanente del rostro, y DIFICULTAD PERMANENTE PARA ENGENDRAR O CONCEBIR. El documento marca la opción d pero todas son correctas.`},
+  {id:105,sys:"cardiologia",q:`¿Cuál de los siguientes signos es el más específico para el diagnóstico de insuficiencia cardíaca?`,opts:["Edema de miembros inferiores", "Taquicardia", "Ingurgitación yugular", "Rales crepitantes"],c:2,exp:`La INGURGITACIÓN YUGULAR es el signo más ESPECÍFICO de IC: indica aumento de la presión venosa central, directamente relacionado con IC derecha o biventricular. El edema puede tener múltiples causas. La taquicardia es muy inespecífica. Los rales pueden ser de causa pulmonar primaria.`},
+  {id:106,sys:"cardiologia",q:`¿Cuál de las siguientes enfermedades NO suele ser causa desencadenante de insuficiencia cardíaca?`,opts:["Infecciones respiratorias", "Anemia", "Hipotiroidismo", "Tromboembolismo"],c:2,exp:`El HIPOTIROIDISMO puede afectar la función cardíaca pero raramente desencadena IC aguda. Las infecciones (↑demanda metabólica), anemia (↑gasto cardíaco compensatorio) y TEP (sobrecarga aguda del VD) son desencadenantes clásicos. El HIpertiroidismo sí es desencadenante frecuente, no el hipo.`},
+  {id:107,sys:"cardiologia",q:`Al ingreso de paciente con IC Clase Funcional III, ¿cuál conducta sería INAPROPIADA?`,opts:["Furosemida", "Enalapril", "Carvedilol", "Internar"],c:2,exp:`El CARVEDILOL (betabloqueante) está contraindicado en IC DESCOMPENSADA aguda: su efecto inotrópico negativo puede empeorar el cuadro. Se inicia SOLO DESPUÉS de estabilizar con diuréticos y vasodilatadores. La furosemida, enalapril e internación son conductas apropiadas en IC CF III.`},
+  {id:108,sys:"medicina-interna",q:`La asociación de enalapril más espironolactona puede provocar (señale la correcta):`,opts:["Hipokalemia", "Hipocalcemia", "Hipernatremia", "Hiperkalemia"],c:3,exp:`Ambos fármacos retienen K⁺: enalapril (IECA) → ↓angiotensina II → ↓aldosterona → retención de K⁺; espironolactona → bloquea receptor aldosterona → retención de K⁺. Su combinación puede causar HIPERKALEMIA grave, especialmente con IRC. Vigilancia estrecha de kalemia.`},
+  {id:109,sys:"medicina-interna",q:`Lucía, 24 años, debilidad proximal progresiva en cinturas escapulares y brazos de 8 semanas, disfagia y rigidez. ¿Diagnóstico más probable?`,opts:["Distrofia muscular del adulto", "Esclerosis lateral amiotrófica", "Esclerosis múltiple", "Polimiositis"],c:3,exp:`POLIMIOSITIS: miopatía inflamatoria autoinmune con debilidad muscular PROXIMAL simétrica + disfagia + rigidez. Predomina en mujeres de mediana edad. Sin fasciculaciones ni signos del SNC. Diagnóstico: CK elevada + EMG + biopsia muscular. ELA tiene fasciculaciones. EM tiene afectación del SNC.`},
+  {id:110,sys:"cardiologia",q:`¿Cuál es la válvula que más se afecta en la endocarditis bacteriana?`,opts:["Mitral", "Tricúspide", "Aórtica", "Pulmonar"],c:0,exp:`La VÁLVULA MITRAL es la más afectada en endocarditis bacteriana en la población general (seguida de la aórtica). La TRICÚSPIDE predomina en usuarios de drogas intravenosas (UDIV). La pulmonar es la menos afectada. El Streptococcus viridans (ahora S. sanguinis) es el agente más frecuente.`},
+  {id:111,sys:"cardiologia",q:`¿Cuál de las siguientes entidades NO cursa con onda R alta en V1 en el ECG?`,opts:["Hipertrofia ventricular derecha", "Infarto posterior", "Síndrome de Wolff-Parkinson-White", "Bloqueo completo de rama izquierda"],c:3,exp:`El BCRI muestra patrón QS o rS en V1 (onda R pequeña o AUSENTE) con R empastada en V5-V6. En cambio: HVD, infarto posterior y WPW SÍ producen R alta en V1. El BCRI es la excepción que NO cursa con R alta en V1.`},
+  {id:112,sys:"medicina-interna",q:`¿Cuál es la diferencia entre anemia por déficit de ácido fólico y por déficit de vitamina B12?`,opts:["El volumen corpuscular medio (VCM)", "Úlceras bucales", "Neutrófilos hipersegmentados", "Alteraciones neurológicas"],c:3,exp:`Ambas causan anemia megaloblástica (VCM alto, neutrófilos hipersegmentados). La diferencia EXCLUSIVA: la deficiencia de VITAMINA B12 causa ALTERACIONES NEUROLÓGICAS (neuropatía periférica, degeneración combinada subaguda medular). El folato no participa en la síntesis de mielina.`},
+  {id:113,sys:"cirugia",q:`¿Cuál es correcto en relación con una hernia crural?`,opts:["El contenido protruye a través del orificio inguinal profundo", "El contenido protruye a través del orificio inguinal superficial", "El contenido protruye a través del orificio umbilical", "Es más frecuente en las mujeres"],c:3,exp:`La hernia CRURAL (femoral) protruye por el canal femoral, medial a los vasos femorales, por debajo del ligamento inguinal. ES MÁS FRECUENTE EN MUJERES por anatomía pélvica (canal femoral más ancho). Alta tasa de incarceración. Las opciones a, b describen hernia inguinal.`},
+  {id:114,sys:"gastro",q:`¿Cuál de las siguientes situaciones NO es indicación de tratamiento quirúrgico del RGE?`,opts:["Fracaso del tratamiento médico", "Esófago de Barrett", "Reflujo radiológico asintomático", "Presencia de hernia paraesofágica"],c:2,exp:`El REFLUJO RADIOLÓGICO ASINTOMÁTICO no es indicación quirúrgica. La cirugía antirreflujo (funduplicatura de Nissen) se indica ante: fracaso del tto médico, Barrett con displasia, hernia paraesofágica sintomática, estenosis esofágica. Sin síntomas no hay beneficio de la cirugía.`},
+  {id:115,sys:"cirugia",q:`Método más específico de localización de un adenoma paratiroideo:`,opts:["Tomografía computada", "PET/TC", "Resonancia magnética", "Centellograma con Sestamibi Tc-99m"],c:3,exp:`El SESTAMIBI Tc-99m es la técnica de elección para localizar adenomas paratiroideos (sensibilidad ~90%). Permite planificar la paratiroidectomía mínimamente invasiva. El SPECT/CT mejora la localización anatómica. TAC y RMN tienen menor sensibilidad específica para este fin.`},
+  {id:116,sys:"cirugia",q:`Método de biopsia adecuado para lesión cutánea pigmentada de 3.5 cm en muslo derecho:`,opts:["Excisional", "Incisional", "Por punción con aguja fina", "Por punción con aguja gruesa"],c:0,exp:`Para lesiones melanocíticas sospechosas → BIOPSIA EXCISIONAL COMPLETA. Permite evaluar el espesor de BRESLOW (factor pronóstico fundamental) sin riesgo de muestreo parcial. La biopsia incisional puede alterar el estadiaje y solo se acepta en lesiones muy grandes o inaccesibles.`},
+];
+
+const SYSN = {
+  cirugia:"Cirugía",cardiologia:"Cardiología",ginecologia:"Ginecología/Obstetricia",
+  neurologia:"Neurología / Psiquiatría","medicina-interna":"Medicina Interna",
+  pediatria:"Pediatría",gastro:"Gastroenterología","salud-publica":"Salud Pública",legal:"Legal / Ética"
+};
+const SYSCLS = {
+  cirugia:"tc",cardiologia:"tc2",ginecologia:"tc3",neurologia:"tc4",
+  "medicina-interna":"tc5",pediatria:"tc6",gastro:"tc7","salud-publica":"tc8",legal:"tc9"
+};
+const SYSORD = ["cirugia","cardiologia","ginecologia","neurologia","medicina-interna","pediatria","gastro","salud-publica","legal"];
+const LTRS = ["A","B","C","D","E"];
+
+let mode="random", deck=[], idx=0, st={}, rotY=0;
+
+function selMode(m){
+  mode=m;
+  document.getElementById('mr').classList.toggle('sel',m==='random');
+  document.getElementById('mo').classList.toggle('sel',m==='order');
+}
+
+function shuffle(a){
+  const r=[...a];
+  for(let i=r.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[r[i],r[j]]=[r[j],r[i]];}
+  return r;
+}
+
+function startGame(){
+  deck = mode==='random' ? shuffle([...Q]) : buildOrdered();
+  st={};deck.forEach(q=>st[q.id]={answered:false,correct:null,chosen:-1});
+  idx=0;rotY=0;
+  document.getElementById('fl').style.transition='none';
+  document.getElementById('fl').style.transform='rotateY(0deg)';
+  show('sg');hide('ss');
+  renderCurrent();
+}
+
+function restartGame(){
+  hide('sd');startGame();
+}
+
+function buildOrdered(){
+  const r=[];
+  SYSORD.forEach(s=>Q.filter(q=>q.sys===s).forEach(q=>r.push(q)));
+  return r;
+}
+
+function goHome(){hide('sg');hide('sd');show('ss');}
+
+function show(id){document.getElementById(id).style.display='flex';}
+function hide(id){document.getElementById(id).style.display='none';}
+
+function renderCurrent(){
+  const q=deck[idx];
+  const s=st[q.id];
+
+  // Snap to front face if not answered and currently showing back
+  const isFront=(Math.round(rotY/180)%2===0);
+  if(!isFront){
+    rotY+=180;
+    const fl=document.getElementById('fl');
+    fl.style.transition='none';
+    fl.style.transform=`rotateY(${rotY}deg)`;
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{
+      fl.style.transition='transform .65s cubic-bezier(.4,0,.2,1)';
+    }));
+  }
+
+  // System tag
+  const tag=document.getElementById('stag');
+  tag.textContent=SYSN[q.sys];
+  tag.className='systag '+SYSCLS[q.sys];
+
+  // Front
+  document.getElementById('qn').textContent=`Pregunta ${idx+1} de ${deck.length}`;
+  document.getElementById('qt').textContent=q.q;
+
+  // Options
+  const og=document.getElementById('og');
+  og.innerHTML='';
+  q.opts.forEach((o,i)=>{
+    const btn=document.createElement('button');
+    btn.className='opt';
+    if(s.answered){
+      btn.disabled=true;
+      if(i===q.c) btn.classList.add('correct');
+      else if(i===s.chosen) btn.classList.add('wrong');
+    }
+    btn.innerHTML=`<span class="optl">${LTRS[i]}</span><span>${o}</span>`;
+    if(!s.answered) btn.addEventListener('click',e=>{e.stopPropagation();choose(q.id,i);});
+    og.appendChild(btn);
+  });
+
+  // Flip hint
+  document.getElementById('fh').classList.toggle('vis',s.answered);
+
+  // Back
+  document.getElementById('ba').textContent=`${LTRS[q.c]}) ${q.opts[q.c]}`;
+  document.getElementById('et').textContent=q.exp;
+  const rob=document.getElementById('rob');
+  if(s.answered){
+    const c=s.correct?'var(--green)':'var(--red)';
+    const l=s.correct?'✓ Respondiste correctamente':'✗ Respuesta incorrecta';
+    rob.innerHTML=`<span class="robd" style="background:${c}"></span><span style="color:${c}">${l}</span>`;
+  } else {
+    rob.innerHTML='<span style="color:var(--muted);font-size:.72rem">Respondé en el frente para registrar tu resultado</span>';
+  }
+
+  updateStats();
+  updateNextPulse();
+}
+
+function choose(qid,cidx){
+  const q=deck.find(x=>x.id===qid);
+  if(!q||st[qid].answered) return;
+  const ok=(cidx===q.c);
+  st[qid]={answered:true,correct:ok,chosen:cidx};
+
+  // Update options UI
+  document.getElementById('og').querySelectorAll('.opt').forEach((b,i)=>{
+    b.disabled=true;
+    if(i===q.c) b.classList.add('correct');
+    else if(i===cidx) b.classList.add('wrong');
+  });
+  document.getElementById('fh').classList.add('vis');
+  const rob=document.getElementById('rob');
+  const c=ok?'var(--green)':'var(--red)';
+  const l=ok?'✓ Respondiste correctamente':'✗ Respuesta incorrecta';
+  rob.innerHTML=`<span class="robd" style="background:${c}"></span><span style="color:${c}">${l}</span>`;
+
+  updateStats();
+  updateNextPulse();
+  setTimeout(()=>{flipToBack();},750);
+}
+
+function flipToBack(){
+  const isFront=(Math.round(rotY/180)%2===0);
+  if(isFront){rotY+=180;applyFlip();}
+}
+function flipCard(){rotY+=180;applyFlip();}
+function applyFlip(){
+  const fl=document.getElementById('fl');
+  fl.style.transition='transform .65s cubic-bezier(.4,0,.2,1)';
+  fl.style.transform=`rotateY(${rotY}deg)`;
+}
+
+function nav(dir){
+  const ni=idx+dir;
+  if(ni<0) return;
+  if(ni>=deck.length){showDone();return;}
+  idx=ni;renderCurrent();
+}
+
+function updateStats(){
+  const ok=deck.filter(q=>st[q.id].answered&&st[q.id].correct).length;
+  const bad=deck.filter(q=>st[q.id].answered&&!st[q.id].correct).length;
+  document.getElementById('sok').textContent=ok;
+  document.getElementById('sbad').textContent=bad;
+  const pct=Math.round(((idx+1)/deck.length)*100);
+  document.getElementById('pf').style.width=pct+'%';
+  document.getElementById('plbl').textContent=`Pregunta ${idx+1} de ${deck.length}`;
+  document.getElementById('ppct').textContent=pct+'%';
+}
+
+function updateNextPulse(){
+  const btn=document.getElementById('bnt');
+  if(!btn||!deck.length) return;
+  const answered=deck[idx]&&st[deck[idx].id]&&st[deck[idx].id].answered;
+  btn.classList.toggle('pulse',!!answered);
+}
+
+function showDone(){
+  const ans=deck.filter(q=>st[q.id].answered);
+  const ok=ans.filter(q=>st[q.id].correct).length;
+  const bad=ans.length-ok;
+  const pct=ans.length>0?Math.round((ok/ans.length)*100):0;
+  document.getElementById('dsc').textContent=pct+'%';
+  document.getElementById('dok').textContent=ok;
+  document.getElementById('dbd').textContent=bad;
+  document.getElementById('dtt').textContent=ans.length;
+  hide('sg');show('sd');
+}
+
+/* ── SWIPE ── */
+(function(){
+  let sx=0,sy=0,dragging=false;
+  const TH=72,FH=50,DR=0.3;
+
+  function onStart(x,y){
+    if(document.getElementById('sg').style.display==='none') return false;
+    sx=x;sy=y;dragging=true;
+    document.getElementById('fl').style.transition='none';
+    return true;
+  }
+  function onMove(x,y){
+    if(!dragging) return;
+    const dx=x-sx,dy=y-sy;
+    if(Math.abs(dx)>Math.abs(dy)){
+      const d=dx*DR;
+      document.getElementById('fl').style.transform=`rotateY(${rotY}deg) translateX(${d}px)`;
+      document.getElementById('el').style.opacity=dx>15?Math.min(1,(dx-15)/50):0;
+      document.getElementById('er').style.opacity=dx<-15?Math.min(1,(-dx-15)/50):0;
+    }
+  }
+  function onEnd(x,y){
+    if(!dragging) return;
+    dragging=false;
+    document.getElementById('fl').style.transition='transform .65s cubic-bezier(.4,0,.2,1)';
+    document.getElementById('fl').style.transform=`rotateY(${rotY}deg)`;
+    document.getElementById('el').style.opacity=0;
+    document.getElementById('er').style.opacity=0;
+    const dx=x-sx,dy=y-sy;
+    if(Math.abs(dx)>Math.abs(dy)+10){
+      if(dx<-TH) nav(1);
+      else if(dx>TH) nav(-1);
+    } else if(Math.abs(dy)>FH&&Math.abs(dy)>Math.abs(dx)){
+      flipCard();
+    }
+  }
+
+  // Touch
+  document.addEventListener('touchstart',e=>{
+    if(!e.target.closest('#cw')) return;
+    onStart(e.touches[0].clientX,e.touches[0].clientY);
+  },{passive:true});
+  document.addEventListener('touchmove',e=>{
+    if(!dragging) return;
+    e.preventDefault();
+    onMove(e.touches[0].clientX,e.touches[0].clientY);
+  },{passive:false});
+  document.addEventListener('touchend',e=>{
+    if(!dragging) return;
+    onEnd(e.changedTouches[0].clientX,e.changedTouches[0].clientY);
+  });
+
+  // Mouse
+  document.addEventListener('mousedown',e=>{
+    if(!e.target.closest('#cw')) return;
+    if(e.button!==0||e.target.tagName==='BUTTON'||e.target.closest('button.opt')) return;
+    onStart(e.clientX,e.clientY);
+  });
+  document.addEventListener('mousemove',e=>{if(dragging)onMove(e.clientX,e.clientY);});
+  document.addEventListener('mouseup',e=>{if(dragging)onEnd(e.clientX,e.clientY);});
+})();
+
+/* ── KEYBOARD ── */
+document.addEventListener('keydown',e=>{
+  if(document.getElementById('sg').style.display==='none') return;
+  if(e.key==='ArrowRight'||e.key==='Enter') nav(1);
+  else if(e.key==='ArrowLeft') nav(-1);
+  else if(e.key===' '){e.preventDefault();flipCard();}
+  else{
+    const m={'a':0,'b':1,'c':2,'d':3,'e':4};
+    const i=m[e.key.toLowerCase()];
+    if(i!==undefined){const q=deck[idx];if(q&&!st[q.id].answered)choose(q.id,i);}
+  }
+});
+</script>
+</body>
+</html>
